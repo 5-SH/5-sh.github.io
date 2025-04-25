@@ -150,7 +150,7 @@ pwa:
 paginate: 10
 
 # The base URL of your site
-baseurl: "https://5-sh.github.io/"
+baseurl: "/"
 
 # ------------ The following options are not recommended to be modified ------------------
 
@@ -226,5 +226,5 @@ jekyll-archives:
     category: category
     tag: tag
   permalinks:
-    tag: /tags/:name/
-    category: /categories/:name/
+    tag: https://5-sh.github.io/tags/:name/
+    category: https://5-sh.github.io/categories/:name/
