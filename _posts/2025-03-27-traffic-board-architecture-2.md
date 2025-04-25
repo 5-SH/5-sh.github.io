@@ -44,8 +44,7 @@ mermaid: true
 Redis는 메모리를 저장소로 사용하고 싱글스레드로 동작하기 때문에 동시성 문제가 발생하지 않는다.   
 그리고 인기글 서비스 구현에 필요한 Sorted Set, TTL과 같은 기능을 제공한다.   
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph TD
     subgraph Service ["서비스(Producer)"]
         Article[Article]
@@ -72,8 +71,7 @@ graph TD
     ArticleRead --> Redis
 
     
-</div>
-{:/nomarkdown}
+```
 
 ### 1-2. 이벤트 전달 과정
 
@@ -81,8 +79,7 @@ Producer인 게시글, 댓글, 좋아요, 조회수 서비스는 사용자의 �
 Kafka의 Topic에 이벤트가 들어오면 Topic을 구독하고 있는 Subscriber인 인기글 서비스는 이벤트를 수신해 처리한다.    
 이 과정에서 이벤트는 아래와 같은 과정을 거치며 전달되고 처리된다.   
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph TD
     subgraph Producer[Producer]
         direction LR
@@ -130,8 +127,7 @@ graph TD
     Event_Consumer --> EventPayload_Consumer
     EventPayload_Consumer --> EventHandler
     
-</div>
-{:/nomarkdown}
+```
 
 - EventPayload: Entity에서 나온 이벤트 정보. 이벤트를 Consumer와 Producer가 주고 받기 위해 Event 객체에 EventType과 EventPayload를 담아서 Kafka에 보낸다.   
 - EventType: 이벤트에 따라 Kafka Topic을 정하고 EventPayload를 deserialize할 수 있도록, EventPayload 클래스 정보를 담고 있는 enum이다.
@@ -471,8 +467,7 @@ Transactional Outbox은 별도의 러닝 커브가 없고 기존의 환경에서
 Transactional Outbox를 사용해 Transactional Message를 구현했다.
 
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph LR
     subgraph Producer [Producer]
         Logic[비즈니스 로직 수행]
@@ -491,8 +486,7 @@ graph LR
     Producer -->|이벤트 전송| Kafka
     Consumer -->|이벤트 수신| Kafka
     
-</div>
-{:/nomarkdown}
+```
 
 #### 1-3-2. Transactional Outbox 구조
 
@@ -510,8 +504,7 @@ MSA, 분산 환경의 서비스인 경우 게시글, 댓글, 좋아요, 조회�
 문제가 생겨 발급이 안된 이벤트는 Outbox 테이블에 남아있고 Polling Scheduler가 Outbox 테이블에서 발급된지 10초가 지난 이벤트는 전송되지 않은 것으로 간주하고 Kafka에 다시 보낸다.   
 이 방법으로 전송되지 않은 이벤트들을 관리하고 다시 보내 Producer에서 메시지에 대해 무결성을 보장할 수 있다.   
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph LR
     subgraph Article ["Article(Producer)"]
     end
@@ -546,13 +539,11 @@ graph LR
     Redis -->|애플리케이션 수에 맞게 shard key 분배| Coordinator
     Coordinator -->|Shard Key로 Partition 선택| Event_Publish
     Event_Publish -->|이벤트 전송| Kafka
-</div>
-{:/nomarkdown}
+```
 
 #### 1-3-3. Transactional Outbox 동작
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph LR
     subgraph Article_Service ["ArticleService"]
         direction LR
@@ -598,8 +589,7 @@ graph LR
     Outbox_Publish -->|"After Commit OutboxEvent"| publish_Event
     messageRelayKafkaTemplateSend -->|"Event Payload(JSON 형식의 String)"| Kafka
     outboxRepositorySave -->|"Event Payload(JSON 형식의 String)"| Outbox_Table
-</div>
-{:/nomarkdown}
+```
 
 Service에서 Transactional하게 비즈니스 로직을 수행하고 EventPayload를 만들어 발행한다. 발행한 EventPayload는 OutboxEvent 형식으로 변환되고고 ApplicationEventPublisher를 통해 발급된다.   
 
@@ -745,8 +735,7 @@ public class MessageRelay {
 서비스 종류 별로 Redis의 zSet을 가지고 Score 값은 PING을 보낸 시간(sec)를 갖는다.    
 그리고 PING을 보낼 때 마다 PING_INTERNAL_SECOND * PING_FAILURE_THRESHOLD 만큼 지난 Score를 가진 항목은 실행이 중지된 서비스로 간주하고 목록에서 제거한다.   
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph TD
     subgraph Article_Service_1 ["Article #1"]
         Article_PING1["PING #1"]
@@ -795,8 +784,7 @@ graph TD
     Comment_PING1 -->|"Instant.now().toEpochMilli()"| Coordinator_List_Comment
     Comment_PING2 -->|"Instant.now().toEpochMilli()"| Coordinator_List_Comment
     Comment_PING3 -->|"Instant.now().toEpochMilli()"| Coordinator_List_Comment
-</div>
-{:/nomarkdown}
+```
 
 ```java
 @Component

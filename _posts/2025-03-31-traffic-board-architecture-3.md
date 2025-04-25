@@ -4,8 +4,8 @@ title: 대규모 시스템으로 설계된 게시판의 구조 - Article Read
 date: 2025-03-31 01:01:14 + 0900
 categories: [traffic]
 tags: [java, spring, board, traffic]
-mermaid: true
 ---
+
 <!-- ### 강의 : [스프링부트로 대규모 시스템 설계 - 게시판](https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%80%ED%8A%B8%EB%A1%9C-%EB%8C%80%EA%B7%9C%EB%AA%A8-%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%84%A4%EA%B3%84-%EA%B2%8C%EC%8B%9C%ED%8C%90/dashboard) -->
 
 # 대규모 시스템으로 설계된 게시판의 구조 - Article Read
@@ -32,8 +32,7 @@ MSA로 개발된 게시글, 댓글, 좋아요, 조회수 서비스는 아래와 
 - 게시글 읽기 요청의 부하가 다른 서비스에 전달된다.
 - 게시글 읽기 요청이 늘어나 서비스를 추가로 실행하면, 게시글 서비스에 읽기/쓰기 기능이 같이 있어 사용하지 않는 쓰기 리소스도 더 늘어난다.
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph LR
     subgraph Client [사용자]
     end
@@ -50,8 +49,7 @@ graph LR
     Article -->|댓글 수 조회| Comment
     Article -->|좋아요 수 조회| Like
     Article -->|조회수 조회| View
-</div>
-{:/nomarkdown}
+```
 
 ### 1-2. 게시글 읽기 서비스 추가
 
@@ -60,8 +58,7 @@ graph LR
 그러나 데이터가 각 서비스와 DB에 분산되어 있어 게시글 읽기 요청을 처리하기 위한 비요이 증가하고 각 서비스에 부하가 전파된다.   
 이 문제를 해결하기 위해 CQRS(Command and Query Responsibility Segregation) 구조를 사용해 읽기와 쓰기 요청을 독립적으로 관리한다.   
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph LR
     subgraph Client [사용자]
     end
@@ -81,8 +78,7 @@ graph LR
     Article_Read -->|댓글 수 조회| Comment
     Article_Read -->|좋아요 수 조회| Like
     Article_Read -->|조회수 조회| View
-</div>
-{:/nomarkdown}
+```
 
 ### 1-3. CQRS(Command and Query Responsibility Segregation)
 
@@ -105,8 +101,7 @@ Article Query Model은 게시글에 대한 정보, 댓글 수, 좋아요 수를 
 데이터를 변경하는 Command 요청과 데이터를 읽는 Query 요청을 분리해 서비스 간 결합도를 줄이고 순환 참조를 없앨 수 있다.   
 그리고 성능을 높이고 조회와 명령에 관련된 서비스를 독립적으로 확장할 수 있다.    
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 graph LR
     subgraph MySQL [MySQL]
     end
@@ -147,8 +142,7 @@ graph LR
     Article_Read <--> Article_Read_Redis
     Client -->|Command| Command_Service
     Client -->|Query| Article_Read
-</div>
-{:/nomarkdown}
+```
 
 ### 1-4. 게시글 읽기 최적화
 
@@ -559,8 +553,7 @@ public class CacheConfig {
 2번 요청도 cache miss가 나고 View 서비스에 조회수 정보를 요청한다. 그리고 응답을 받으면 Redis에 갱신한다.   
 View 서비스 요청과 Redis 갱신은 한 번만 하면 되는데, 불필요하게 중복되어 View 서비스에 요청이 몰릴 수 있다.   
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 sequenceDiagram
     participant Client as Client
     participant Cache as Cache
@@ -578,8 +571,7 @@ sequenceDiagram
     Cache->>Client: "1번 요청 데이터 응답"
     Client->>Cache: "2번 요청 cache put"
     Cache->>Client: "2번 요청 데이터 응답"
-</div>
-{:/nomarkdown}
+```
 
 이 문제를 해결하기 위해 cache의 TTL을 Logical TTL과 Physical TTL로 나눠 운영한다.   
 Physical TTL 값을 Logical TTL 값보다 크게 설정하고 Redis에는 physical TTL로 설정한다.   
@@ -589,8 +581,7 @@ Logical TTL보다 Physical TTL이 길기 때문에 Redis에서 이전 캐시 값
 이 과정에서 최신이 아닌 조회수 정보가 응답되지만 조회수 정보의 정합성은 크게 중요하지 않기 때문에 허용한다.   
 Distributed Lock은 조회수 서비스에서 어뷰징 방지로 사용한 Distributed Lock과 동일하게 Redis의 TTL과 setIfAbsent 메소드를 사용해 구현한다.   
 
-{::nomarkdown}
-<div class="mermaid">
+```mermaid
 sequenceDiagram
     participant Client as Client
     participant Cache as Cache
@@ -609,5 +600,4 @@ sequenceDiagram
     OriginData->>Client: "1번 요청 원본 데이터 획득"
     Client->>Cache: "1번 요청 cache put"
     Cache->>Client: "1번 요청 데이터 응답"
-</div>
-{:/nomarkdown}
+```
