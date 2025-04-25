@@ -45,6 +45,7 @@ Redis는 메모리를 저장소로 사용하고 싱글스레드로 동작하기 
 그리고 인기글 서비스 구현에 필요한 Sorted Set, TTL과 같은 기능을 제공한다.   
 
 ```mermaid
+
 graph TD
     subgraph Service ["서비스(Producer)"]
         Article[Article]
@@ -70,7 +71,6 @@ graph TD
     L1 --> |이벤트 처리|L2
     ArticleRead --> Redis
 
-    
 ```
 
 ### 1-2. 이벤트 전달 과정
@@ -405,7 +405,7 @@ Article Create/Delete 이벤트는 Redis에 Article 생성 시간에 관련된 �
 Article Liked/Unliked, Article Viewed, Comment Created/Deleted 이벤트는 Article이 오늘 생성 되었는지 확인하고 인기글 Score를 계산해,   
 Redis의 일자별로 인기글을 저장하고 있는 Sorted Set의 Score를 수정한다.   
 
-![이벤트핸들러 목록](https://i.imgur.com/WwMiKQo.jpeg)
+![이벤트핸들러 목록](https://github.com/user-attachments/assets/a7389a30-0864-4ed5-a527-2130967caa08)
 
 ```java
 public interface EventHandler<T extends EventPayload> {
