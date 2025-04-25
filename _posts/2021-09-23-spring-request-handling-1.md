@@ -4,7 +4,6 @@ title: spring request handling 1
 date: 2021-09-23 23:00:00 + 0900
 categories: [spring]
 tags: [spring, servlet]
-mermaid: true
 ---
 # 스프링 요청 처리 과정 1
 

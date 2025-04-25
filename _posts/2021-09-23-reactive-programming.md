@@ -4,7 +4,6 @@ title: reactive programming
 date: 2021-09-23 23:30:00 + 0900
 categories: [patterns]
 tags: [patterns, reactive programming, flow, flux]
-mermaid: true
 ---
 # 리액티브 프로그래밍
 - 끝임없이 들어오는 데이터의 스트림을 비동기 논블로킹 병렬처리 하기 위해 사용하는 프로그래밍이다.   

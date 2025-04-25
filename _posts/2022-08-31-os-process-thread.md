@@ -4,7 +4,6 @@ title: 프로세스, 스레드
 date: 2022-08-31 20:00:00 + 0900
 categories: [os]
 tags: [os, process, thread]
-mermaid: true
 ---
 # 프로세스, 스레드
 프로세스(스레드) 는 cpu(core) 자원을 시분할해서 사용한다. -> 동시에 여러 프로그램이 동작하는 것 처럼 보인다.   

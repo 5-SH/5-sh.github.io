@@ -4,7 +4,6 @@ title: 오프라인 동시성 패턴 (1)
 date: 2022-07-13 15:30:00 + 0900
 categories: [patterns]
 tags: [patterns, concurrency, lock]
-mermaid: true
 ---
 # 오프라인 동시성 패턴 (1)
 ## 1. 낙관적 오프라인 잠금

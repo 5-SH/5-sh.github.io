@@ -4,7 +4,6 @@ title: Node.js stream (2) Readable 스트림
 date: 2022-04-27 18:00:00 + 0900
 categories: [nodejs]
 tags: [nodejs stream]
-mermaid: true
 ---
 # Readable 스트림
 

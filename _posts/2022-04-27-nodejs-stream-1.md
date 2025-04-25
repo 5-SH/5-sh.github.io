@@ -4,7 +4,6 @@ title: Node.js stream (1) 버퍼와 스트림
 date: 2022-04-27 18:00:00 + 0900
 categories: [nodejs]
 tags: [nodejs stream]
-mermaid: true
 ---
 # 버퍼와 스트림
 ## 1. 버퍼링 대 스트리밍

@@ -4,7 +4,6 @@ title: 공유 폴더 설정 (window  -> linux)
 date: 2021-03-26 12:36:00 +0900
 categories: [linux]
 tags: [linux]
-mermaid: true
 ---
 # 공유 폴더 설정 (window  -> linux)
 

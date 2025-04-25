@@ -4,7 +4,6 @@ title: Node.js child process vs worker threads vs cluster
 date: 2021-10-19 11:30:00 + 0900
 categories: [nodejs]
 tags: [deployment, pm2]
-mermaid: true
 ---
 출처 : https://alvinlal.netlify.app/blog/single-thread-vs-child-process-vs-worker-threads-vs-cluster-in-nodejs
 

@@ -4,7 +4,6 @@ title: 싱글톤 패턴 구현 방법 4가지
 date: 2021-08-26 19:30:00 + 0900
 categories: [patterns]
 tags: [java, singleton pattern]
-mermaid: true
 ---
 # 싱글톤 패턴 구현 방법 4가지
 

@@ -4,7 +4,6 @@ title: heap memory 는 어떻게 할당될까
 date: 2021-04-23 16:10:00 + 0900
 categories: [linux]
 tags: [dev, linux]
-mermaid: true
 ---
 # heap memory 는 어떻게 할당될까
   pmap 명령어의 결과로 할당받은 메모리 블록마다 한 줄씩 표현되어 있다.    

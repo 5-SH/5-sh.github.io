@@ -4,7 +4,6 @@ title: JTA 를 활용한 분산 트랜잭션 관리
 date: 2023-02-04 20:30:00 + 0900
 categories: [db]
 tags: [db, transaction, transaction manager, jta]
-mermaid: true
 ---
 ## 1. 들어가기
 비즈니스 로직과 관련된 쿼리들이 여러 종류의 데이터베이스에 걸쳐 수행될 수 있습니다. 이 경우 하나의 데이터베이스를 대상으로 하는 DataSourceTransactionManager 를 사용한 방법으로는 트랜잭션 동기화를 사용할 수 없습니다.    

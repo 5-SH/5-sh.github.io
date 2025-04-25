@@ -4,7 +4,6 @@ title: 함수형 프로그래밍
 date: 2021-08-01 08:00:00 + 0900
 categories: [functional]
 tags: [functional programming, javascript]
-mermaid: true
 ---
 # 함수형 프로그래밍
 

@@ -4,7 +4,6 @@ title: 자바스크립트 클로저 메모리 누수
 date: 2021-04-27 22:00:00 + 0900
 categories: [javascript]
 tags: [javascript, closure, memory leak]
-mermaid: true
 ---
 # 자바스크립트 클로저 메모리 누수
 클로저에 의해 참조된 지역변수는 자신이 정의된 함수가 끝나있고,   

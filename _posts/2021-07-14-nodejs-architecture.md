@@ -4,7 +4,6 @@ title: Node.js 의 구조
 date: 2021-07-14 23:00:00 + 0900
 categories: [nodejs]
 tags: [nodejs, architecture]
-mermaid: true
 ---
 출처1 : https://medium.com/@rpf5573/nodejs-event-loop-part-1-big-picture-7ed38f830f67   
 출처2 : https://darrengwon.tistory.com/953   

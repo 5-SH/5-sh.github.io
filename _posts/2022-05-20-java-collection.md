@@ -4,7 +4,6 @@ title: 자바 컬렉션 종류와 특징
 date: 2022-05-20 14:00:00 + 0900
 categories: [java]
 tags: [java, collection]
-mermaid: true
 ---
 # 자바 컬렉션 종류와 특징
 

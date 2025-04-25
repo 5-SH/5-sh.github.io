@@ -4,7 +4,6 @@ title: Object 9. 유연한 설계
 date: 2021-04-19 21:20:00 + 0900
 categories: [object]
 tags: [object]
-mermaid: true
 ---
 # 오브젝트 - 코드로 이해하는 객체지향 설계 정리
 ## 9. 유연한 설계

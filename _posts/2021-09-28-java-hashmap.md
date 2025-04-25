@@ -4,7 +4,6 @@ title: 자바 HashMap 의 동작
 date: 2021-09-28 23:00:00 + 0900
 categories: [java]
 tags: [java, hashmap]
-mermaid: true
 ---
 # 자바 HashMap 의 동작
 

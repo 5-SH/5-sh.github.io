@@ -4,7 +4,6 @@ title: Javascript prototype
 date: 2021-04-06 20:15:00 + 0900
 categories: [javascript]
 tags: [javascript, js]
-mermaid: true
 ---
 # Javascript Prototype
 

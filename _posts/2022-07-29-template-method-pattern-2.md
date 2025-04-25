@@ -4,7 +4,6 @@ title: 템플릿 메소드(콜백) 패턴 (2)
 date: 2022-07-29 19:30:00 + 0900
 categories: [patterns]
 tags: [patterns, template, method, spring, jdbc]
-mermaid: true
 ---
 # 템플릿 메소드(콜백) 패턴 (2)
 

@@ -4,7 +4,6 @@ title: Object 15. 디자인 패턴과 프레임워크
 date: 2021-04-21 17:00:00 + 0900
 categories: [object]
 tags: [object]
-mermaid: true
 ---
 # 오브젝트 - 코드로 이해하는 객체지향 설계 정리
 ## 15. 디자인 패턴과 프레임워크

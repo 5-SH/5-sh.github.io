@@ -4,7 +4,6 @@ title: Node.js addon Handle
 date: 2021-07-01 07:00:00 + 0900
 categories: [nodejs]
 tags: [nodejs, addon, handle]
-mermaid: true
 ---
 출처1 : https://z-wony.tistory.com/18   
 출처2 : https://kariera.future-processing.pl/blog/a-curious-case-of-memory-leak-in-a-node-js-app/

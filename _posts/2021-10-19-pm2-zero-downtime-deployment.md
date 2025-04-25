@@ -4,7 +4,6 @@ title: pm2 를 사용해 무중단 배포하기
 date: 2021-10-19 10:30:00 + 0900
 categories: [nodejs]
 tags: [deployment, pm2]
-mermaid: true
 ---
 출처 : https://engineering.linecorp.com/ko/blog/pm2-nodejs/   
 

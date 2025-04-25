@@ -4,7 +4,6 @@ title: WebSocket 과 Socket.io
 date: 2021-07-12 23:00:00 + 0900
 categories: [web]
 tags: [websocket, socket.io]
-mermaid: true
 ---
 # WebSocket 과 Socket.io
 

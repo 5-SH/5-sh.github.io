@@ -4,7 +4,6 @@ title: Kubernetes for appliation developers - 2. 빌드
 date: 2022-03-17 18:10:00 + 0900
 categories: [kubernetes]
 tags: [kubernetes, container, docker]
-mermaid: true
 ---
 # Kubernetes for application developers(LFD459)
 

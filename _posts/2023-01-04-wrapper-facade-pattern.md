@@ -4,7 +4,6 @@ title: Wrapper facade 패턴
 date: 2023-01-04 20:30:00 + 0900
 categories: [patterns]
 tags: [patterns, wrapper, facade]
-mermaid: true
 ---
 출처1 : https://www.youtube.com/watch?v=q-KfKdLdXSM&list=PLs4Vf-D53YHm6MA7ZHnYoxD2sAn9NOBZr&ab_channel=YoungSuSon    
 출처2 : Head first design pattern   

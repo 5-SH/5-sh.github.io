@@ -4,7 +4,6 @@ title: JDBC Timeout
 date: 2021-04-05 17:00:00 + 0900
 categories: [db]
 tags: [db, jdbc]
-mermaid: true
 ---
 # JDBC Timeout
   플랫폼에서 JDBC 를 사용해 Tibero DB 에 작업을 요청한 후 동작 불능 상태가 30분 지속되고 Excpetion 이후 서비스가 복구 되었다.    

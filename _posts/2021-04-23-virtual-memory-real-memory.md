@@ -4,7 +4,6 @@ title: 가상 메모리와 실제 메모리
 date: 2021-04-23 16:10:00 + 0900
 categories: [os]
 tags: [os, memory, swap]
-mermaid: true
 ---
 # 가상 메모리와 실제 메모리
  __ps -eo euser,pid,vsz,rss,comm | grep [process id]__ 명령어를 실행할 경우 출력 되는 vsz, rss 값은 다음과 같다.   

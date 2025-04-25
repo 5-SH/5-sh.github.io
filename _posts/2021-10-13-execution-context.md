@@ -4,7 +4,6 @@ title: JavaScript 의 실행 컨텍스트
 date: 2021-10-13 00:30:00 + 0900
 categories: [javascript]
 tags: [javascript, ao, ec]
-mermaid: true
 ---
 # 실행 컨텍스트(EC)
 자바스크립트 코드가 실행되기 위한 환경.      

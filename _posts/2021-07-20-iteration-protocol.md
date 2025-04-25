@@ -4,7 +4,6 @@ title: JavaScript 이터레이션 프로토콜
 date: 2021-07-20 18:00:00 + 0900
 categories: [javascript]
 tags: [javascript, iteration, iterator, iterable]
-mermaid: true
 ---
 # JavaScript 이터레이션 프로토콜
 ES6 에서 도입된 이터레이션 프로토콜은 데이터 컬렉션을 순회하기 위한 프로토콜이다.   

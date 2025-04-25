@@ -4,7 +4,6 @@ title: 리눅스의 fork(), exec() 시스템 콜
 date: 2022-08-31 21:00:00 + 0900
 categories: [os]
 tags: [os, fork, exec, wait, exit, linux]
-mermaid: true
 ---
 # 리눅스의 fork(), exec() 시스템 콜
 자식 프로세스는 보통 fork(), exec() 시스템 콜을 통해 생성된다.   

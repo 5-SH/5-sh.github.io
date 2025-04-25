@@ -4,7 +4,6 @@ title: Proactor 패턴
 date: 2023-01-13 15:30:00 + 0900
 categories: [patterns]
 tags: [patterns, dispatcher, proactor, async, non-blocking]
-mermaid: true
 ---
 출처1 : https://www.javacodegeeks.com/2012/08/io-demystified.html    
 출처2 : https://docs.oracle.com/javase/7/docs/api/java/nio/channels/AsynchronousChannelGroup.html    

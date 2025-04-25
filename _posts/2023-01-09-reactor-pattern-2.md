@@ -4,7 +4,6 @@ title: Reactor 패턴 (2)
 date: 2023-01-09 22:30:00 + 0900
 categories: [patterns]
 tags: [patterns, dispatcher, reactor]
-mermaid: true
 ---
 출처1 : https://www.javacodegeeks.com/2012/08/io-demystified.html    
 출처2 : https://reakwon.tistory.com/117   

@@ -4,7 +4,6 @@ title: GDB 를 통해 메모리 덤프하기
 date: 2021-04-23 16:10:00 + 0900
 categories: [linux]
 tags: [dev, linux]
-mermaid: true
 ---
 # GDB 를 통해 메모리 덤프하기
   메모리 누수가 의심되는 경우 메모리 덤프를 통해 누수가 있는 곳을 찾아야 한다.   

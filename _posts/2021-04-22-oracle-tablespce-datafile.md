@@ -4,7 +4,6 @@ title: 오라클 테이블스페이스
 date: 2021-04-22 12:40:00 + 0900
 categories: [db]
 tags: [db]
-mermaid: true
 ---
 # 오라클 Tablespace 와 Datafile
 

@@ -4,7 +4,6 @@ title: 데이터베이스 트랜잭션 경계와 동기화 테스트
 date: 2023-02-03 23:00:00 + 0900
 categories: [db]
 tags: [db, transaction, transaction manager]
-mermaid: true
 ---
 # 데이터베이스 트랜잭션 경계와 동기화 테스트
 

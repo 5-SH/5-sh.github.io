@@ -4,7 +4,6 @@ title: 티베로(오라클)에서 row 가 있으면 update 없으면 insert 하�
 date: 2021-08-09 10:30:00 +0900
 categories: [db]
 tags: [db]
-mermaid: true
 ---
 # 티베로(오라클)에서 row 가 있으면 update 없으면 insert 하는 쿼리
 

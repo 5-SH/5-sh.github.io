@@ -4,7 +4,6 @@ title: 자바스크립트 메모리 누수 대처법
 date: 2021-05-04 08:00:00 + 0900
 categories: [javascript]
 tags: [javascript, memory leak]
-mermaid: true
 ---
 # 자바스크립트 메모리 관리, 누수 대처법
 ## 1. 개관

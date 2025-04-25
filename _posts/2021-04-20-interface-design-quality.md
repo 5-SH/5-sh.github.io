@@ -4,7 +4,6 @@ title: 인터페이스와 설계 품질
 date: 2021-04-20 01:40:00 + 0900
 categories: [object]
 tags: [object]
-mermaid: true
 ---
 # 인터페이스와 설계 품질
   퍼블릭 인터페이스의 품질에 영향을 미치는 원칙

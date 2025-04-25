@@ -4,7 +4,6 @@ title: child_process - spawn(), exec(), execFile() fork() in Node.js
 date: 2022-08-31 19:00:00 + 0900
 categories: [nodejs]
 tags: [nodejs, child_process, spawn, exec, execfile, fork]
-mermaid: true
 ---
 # child_process - spawn(), exec(), execFile() fork() in Node.js
 child_process 에는e xecFile(), spawn(), exec(), fork() 네 함수가 존재한다.   

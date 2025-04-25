@@ -4,7 +4,6 @@ title: 4천만 MAU 를 지탱하는 서비스 설계와 데이터 처리 기술 
 date: 2023-03-19 20:30:00 + 0900
 categories: [architecture]
 tags: [db, mau, service, sharding, architecture, transaction]
-mermaid: true
 ---
 # 4천만 MAU 를 지탱하는 서비스 설계와 데이터 처리 기술 강의 메모
 

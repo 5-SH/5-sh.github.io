@@ -4,7 +4,6 @@ title: Javascript prototype 과 상속
 date: 2021-04-07 01:10:00 + 0900
 categories: [javascript]
 tags: [javascript, js, class]
-mermaid: true
 ---
 #  Javascript prototype 과 상속
 

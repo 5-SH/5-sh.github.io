@@ -4,7 +4,6 @@ title: Node.js 와 libuv 그리고 v8 의 관계
 date: 2021-07-13 23:00:00 + 0900
 categories: [nodejs]
 tags: [nodejs, architecture]
-mermaid: true
 ---
 출처 : https://medium.com/dkatalis/nodejs-architecture-relationship-between-libuv-v8-and-js-7dce74cf1c51
 

@@ -4,7 +4,6 @@ title: 프로세스와 스레드
 date: 2021-10-05 23:00:00 + 0900
 categories: [linux]
 tags: [linux, process, thread]
-mermaid: true
 ---
 # 프로세스와 스레드
 

@@ -4,7 +4,6 @@ title: JDBC 를 이용한 Batch Update 의 성능 고찰
 date: 2021-07-14 00:30:00 + 0900
 categories: [db]
 tags: [jdbc, batchupdate]
-mermaid: true
 ---
 출처 : https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=theyoung2002&logNo=220629774573
 

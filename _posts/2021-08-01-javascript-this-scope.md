@@ -4,7 +4,6 @@ title: JavaScript 의 this
 date: 2021-08-01 08:00:00 + 0900
 categories: [javascript]
 tags: [javascript, this, scope]
-mermaid: true
 ---
 # JavaScript 의 this
 

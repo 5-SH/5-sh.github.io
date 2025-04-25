@@ -4,7 +4,6 @@ title: 스토리지 관리와 LVM
 date: 2021-04-08 19:40:00 +0900
 categories: [linux]
 tags: [linux, lvm]
-mermaid: true
 ---
 출처: https://youngmind.tistory.com/entry/CentOS-%EA%B0%95%EC%A2%8C-PART-1-8-%EC%8A%A4%ED%86%A0%EB%A6%AC%EC%A7%80-%EA%B4%80%EB%A6%AC-%E3%85%A3%E3%85%8D
 

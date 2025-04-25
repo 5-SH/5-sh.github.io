@@ -4,7 +4,6 @@ title: Netflix OSS
 date: 2021-09-07 23:30:00 + 0900
 categories: [patterns]
 tags: [msa, zuul, ribbon, eureka, hystrix]
-mermaid: true
 ---
 # Neflix OSS
 넷플릭스에서 제공하는 MSA 전환 기술이다.   

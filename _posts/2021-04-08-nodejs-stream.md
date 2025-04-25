@@ -4,7 +4,6 @@ title: Node.js stream
 date: 2021-04-09 20:23:55 + 0900
 categories: [nodejs]
 tags: [nodejs stream]
-mermaid: true
 ---
 출처:https://jeonghwan-kim.github.io/node/2017/07/03/node-stream-you-need-to-know.html   
 https://jeonghwan-kim.github.io/node/2017/08/07/node-stream-you-need-to-know-2.html   

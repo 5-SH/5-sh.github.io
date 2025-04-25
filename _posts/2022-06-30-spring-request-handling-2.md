@@ -4,7 +4,6 @@ title: spring request handling 2
 date: 2022-06-30 06:00:00 + 0900
 categories: [spring]
 tags: [spring, servlet]
-mermaid: true
 ---
 # 스프링 요청 처리 과정 2
 

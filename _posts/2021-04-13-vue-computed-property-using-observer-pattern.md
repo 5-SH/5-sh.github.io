@@ -4,7 +4,6 @@ title: observer pattern 을 활용해 vue.js 의 computed 속성 구현
 date: 2021-04-13 18:30:00 + 0900
 categories: [patterns]
 tags: [javascript, observer pattern, computed]
-mermaid: true
 ---
 # observer pattern 을 활용해 vue.js 의 comptued 속성 구현
   - person 객체에 age 속성이 있다.

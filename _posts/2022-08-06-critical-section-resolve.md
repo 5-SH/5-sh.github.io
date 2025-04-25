@@ -4,7 +4,6 @@ title: 임계구역 해결 방법
 date: 2022-08-06 02:00:00 + 0900
 categories: [os]
 tags: [os, critical section, monitor]
-mermaid: true
 ---
 # 임계구역 해결 방법
 출처1 : [임계구역 해결방법 결론은 하나 'Queue'! - 널널한 개발자 TV](https://www.youtube.com/watch?v=1I_DQosMkhQ&list=PLXvgR_grOs1DGFOeD792kHlRml0PhCe9l&index=17&ab_channel=%EB%84%90%EB%84%90%ED%95%9C%EA%B0%9C%EB%B0%9C%EC%9E%90TV)    

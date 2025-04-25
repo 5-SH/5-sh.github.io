@@ -4,7 +4,6 @@ title: javascipt 의 객체란?
 date: 2021-03-31 23:05:00 +0900
 categories: [javascript]
 tags: [javascript]
-mermaid: true
 ---
 # 객체(Object) 란?   
   자바스크립트는 객체 기반의 스크립트 언어이다. 원시 타입을 제외한 모든 값(함수, 배열 등)은 객체이다.   

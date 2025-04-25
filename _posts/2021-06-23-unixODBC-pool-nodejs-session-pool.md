@@ -4,7 +4,6 @@ title: Node.js 에서 pool 을 사용하면 pool size 만큼 RDBMS 에서 활용
 date: 2021-06-23 22:00:00 + 0900
 categories: [nodejs]
 tags: [pool, unixodbc, nodejs, worker thread]
-mermaid: true
 ---
 # Node.js 에서 unixODBC pool 을 사용할 때 pool size 만큼 RDBMS 에서 활용하지 않는 이유
 

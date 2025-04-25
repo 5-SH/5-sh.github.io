@@ -4,7 +4,6 @@ title: Node.js 의 리액터 패턴
 date: 2021-08-01 20:30:00 + 0900
 categories: [patterns]
 tags: [nodejs, async, non-blocking, reactor-pattern]
-mermaid: true
 ---
 # Node.js 의 리액터 패턴
 

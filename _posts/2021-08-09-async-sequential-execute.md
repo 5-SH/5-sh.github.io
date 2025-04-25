@@ -4,7 +4,6 @@ title: 자바스크립트의 비동기 순차 실행
 date: 2021-08-09 03:00:00 + 0900
 categories: [javascript]
 tags: [javascript, async, sequential]
-mermaid: true
 ---
 # 자바스크립트의 비동기 순차 실행
 실행 순서에 따라 한 번에 하나씩 비동기 작업을 실행.   

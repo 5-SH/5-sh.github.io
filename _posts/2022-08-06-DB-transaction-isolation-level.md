@@ -4,7 +4,6 @@ title: DB 의 트랜잭션 격리 수준
 date: 2022-08-06 11:00:00 + 0900
 categories: [db]
 tags: [db, transaction, isolation]
-mermaid: true
 ---
 # DB 의 트랜잭션 격리 수준
 
