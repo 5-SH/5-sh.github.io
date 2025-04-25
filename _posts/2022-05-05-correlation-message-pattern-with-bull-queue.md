@@ -17,7 +17,7 @@ tags: [patterns, reactive programming, flow, flux]
 메시지 큐의 태스크는 순서대로 실행된 후 요청 전송자(클라이언트)가 ID 로 두 메시지를 상호 연결하고 응답을 적절한 핸들러에 반환해 처리합니다.    
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/166848517-0d575c29-d826-4d2b-bcaa-a0be8d2fc7e0.png" height="350" />
+  <img src="https://user-images.githubusercontent.com/13375810/166848517-0d575c29-d826-4d2b-bcaa-a0be8d2fc7e0.png" height="350"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ 상관 식별자를 사용한 요청/응답 메시지 교환</p>
 </figure>
 
@@ -31,7 +31,7 @@ Bull 메시지 큐는 redis 기반의 큐 시스템을 구현한 노드 라이�
 Bull 메시지 큐는 Job 이라 불리는 태스크 단위를 사용합니다.   
 Job 은 메시지 큐에 추가되고 처리될 때 까지 아래 라이프 사이클을 가집니다.   
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/167081643-30fe8975-d5af-4877-8fa7-591a12c7bbe5.png" height="350" />
+  <img src="https://user-images.githubusercontent.com/13375810/167081643-30fe8975-d5af-4877-8fa7-591a12c7bbe5.png" height="350"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ Job 라이프 사이클</p>
 </figure>
 

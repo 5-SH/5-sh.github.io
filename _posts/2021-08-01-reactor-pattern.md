@@ -15,7 +15,7 @@ tags: [nodejs, async, non-blocking, reactor-pattern]
 
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/127773641-26c2d1b2-079f-4cea-8300-5d9ac9f87f13.png" height="250" />
+  <img src="https://user-images.githubusercontent.com/13375810/127773641-26c2d1b2-079f-4cea-8300-5d9ac9f87f13.png" height="250"  alt=""/>
   <figcaption value="▲ 다중 커넥션을 처리하기 위한 다중 스레드" />
 </figure>
 
@@ -76,7 +76,7 @@ while (events = demultiplexer.watch(watchedList)) { // (2)
 
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/127774782-13da8599-b51a-47fc-85a1-419b2f3801e8.png" height="250" />
+  <img src="https://user-images.githubusercontent.com/13375810/127774782-13da8599-b51a-47fc-85a1-419b2f3801e8.png" height="250"  alt=""/>
   <figcaption value="▲ 다중 커넥션을 처리하기 위한 단일 스레드" />
 </figure>
 

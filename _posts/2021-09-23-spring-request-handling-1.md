@@ -8,7 +8,7 @@ tags: [spring, servlet]
 # 스프링 요청 처리 과정 1
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/134381785-9ba80f37-4068-4afd-8660-a3fda3376ea6.png" height="450" />
+  <img src="https://user-images.githubusercontent.com/13375810/134381785-9ba80f37-4068-4afd-8660-a3fda3376ea6.png" height="450"  alt=""/>
 </figure>
 
 1. request 가 Servlet 을 통해 Dispatcher Servlet 의 doDispatch() 로 들어간다.

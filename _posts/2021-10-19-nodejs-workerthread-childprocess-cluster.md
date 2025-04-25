@@ -42,7 +42,7 @@ const fibonacci = n => {
 ```
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/137780289-6b9098c9-3397-4ebe-95a8-b43854d641de.jpg" />
+  <img src="https://user-images.githubusercontent.com/13375810/137780289-6b9098c9-3397-4ebe-95a8-b43854d641de.jpg"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://alvinlal.netlify.app/blog/single-thread-vs-child-process-vs-worker-threads-vs-cluster-in-nodejs</p>
 </figure>
 
@@ -266,7 +266,7 @@ app.listen(7777, () => console.log("listening on port 7777"))
 워커 스레드를 사용하는 서버의 CPU 도 4개 모두 골고루 사용하는 것을 볼 수 있다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/137784919-d6866af4-f5b7-44e1-8304-b50c5efcb4a1.jpg" />
+  <img src="https://user-images.githubusercontent.com/13375810/137784919-d6866af4-f5b7-44e1-8304-b50c5efcb4a1.jpg"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://alvinlal.netlify.app/blog/single-thread-vs-child-process-vs-worker-threads-vs-cluster-in-nodejs</p>
 </figure>
 

@@ -8,12 +8,12 @@ tags: [nodejs stream]
 # 버퍼와 스트림
 ## 1. 버퍼링 대 스트리밍
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/165419761-102507ec-cce3-46b4-9865-6a0be77d08fb.png" height="450" />
+  <img src="https://user-images.githubusercontent.com/13375810/165419761-102507ec-cce3-46b4-9865-6a0be77d08fb.png" height="450"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ 버퍼 모드</p>
 </figure>
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/165419764-c8a492c9-e205-4354-bf35-a664b241b5cd.png" height="450" />
+  <img src="https://user-images.githubusercontent.com/13375810/165419764-c8a492c9-e205-4354-bf35-a664b241b5cd.png" height="450"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ 스트림 모드</p>
 </figure>
 
@@ -85,7 +85,7 @@ createReadStream(filename)
 그리고 서버는 수신하는 즉시 chunk 를 압축 해제할 수 있다.   
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/165425635-785c8463-0406-4d1b-90c8-92cc3dc6d9da.png" height="450" />
+  <img src="https://user-images.githubusercontent.com/13375810/165425635-785c8463-0406-4d1b-90c8-92cc3dc6d9da.png" height="450"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ 버퍼링과 스트림 비교</p>
 </figure>
 

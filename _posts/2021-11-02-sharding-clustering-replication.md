@@ -12,7 +12,7 @@ tags: [db, nomailzation]
 DB 서버가 다운되는 경우를 대비하기 위해 DB 서버를 여러 개로 만든다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/139803422-172d9dee-5437-4daf-8011-c1fd03029e1d.jpg" height="350"/>
+  <img src="https://user-images.githubusercontent.com/13375810/139803422-172d9dee-5437-4daf-8011-c1fd03029e1d.jpg" height="350" alt=""/>
 </figure>
 
 
@@ -22,7 +22,7 @@ DB 서버가 다운되는 경우를 대비하기 위해 DB 서버를 여러 개�
 DB 데이터가 손실되는 경우를 대비하기 위해 실제 저장소를 복제한다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/139803748-2c653f7b-2b0b-41c0-b83f-08fc5179c2af.jpg" height="400"/>
+  <img src="https://user-images.githubusercontent.com/13375810/139803748-2c653f7b-2b0b-41c0-b83f-08fc5179c2af.jpg" height="400" alt=""/>
 </figure>
 
 
@@ -34,7 +34,7 @@ DB 데이터가 손실되는 경우를 대비하기 위해 실제 저장소를 �
 DB 자체를 나누는 것이므로 애플리케이션 레벨에서 구현한다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/139804120-b604a807-ba00-43ba-8f88-fc50c56e6cae.png" height="400"/>
+  <img src="https://user-images.githubusercontent.com/13375810/139804120-b604a807-ba00-43ba-8f88-fc50c56e6cae.png" height="400" alt=""/>
 </figure>
 
 ### 3-1. 샤드 키
@@ -54,7 +54,7 @@ locator service 라는 테이블로 샤드 키를 결정한다. 샤드가 추가
 대신 locator service 에 문제가 생기면 모든 샤드에 문제가 생길 수 있고, locator service 에 모든 요청이 몰려 병목이 생길 수 있다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/139806029-9ec3bf9f-ae23-4bc9-9b99-cd29f72d05bd.png" height="400"/>
+  <img src="https://user-images.githubusercontent.com/13375810/139806029-9ec3bf9f-ae23-4bc9-9b99-cd29f72d05bd.png" height="400" alt=""/>
 </figure>
 
 ### 3-2. 분할
@@ -82,6 +82,6 @@ locator service 라는 테이블로 샤드 키를 결정한다. 샤드가 추가
 ProxySQL 에서 해시 샤딩으로 샤딩 키를 결정해 병목 문제를 해결할 수 있다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/139807263-0726217d-7700-41d8-8569-200dbfa299e4.png"/>
+  <img src="https://user-images.githubusercontent.com/13375810/139807263-0726217d-7700-41d8-8569-200dbfa299e4.png" alt=""/>
 </figure>
 

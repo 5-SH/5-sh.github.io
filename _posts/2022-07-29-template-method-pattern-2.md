@@ -148,7 +148,7 @@ public class UserDaoInsert extends UserDao {
 템플릿 메소드 패턴의 단점을 보완합니다.   
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/181700806-6a10e32d-b352-432d-bfe2-fd3e4036cc49.png" width="100%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/181700806-6a10e32d-b352-432d-bfe2-fd3e4036cc49.png" width="100%" alt=""/>
 </figure>
 
 컨텍스트(Context) 는 PreparedStatement 를 실행하는 JDBC 의 작업 흐름이고   

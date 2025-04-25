@@ -34,7 +34,7 @@ SERIALIZABLE 또한 DB 동시성 보장을 위해 거의 사용되지 않습니�
 ## 2. READ UNCOMMITTED
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/183227977-f1f412f0-1c77-4cdf-936a-326d249bd240.png" width="55%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/183227977-f1f412f0-1c77-4cdf-936a-326d249bd240.png" width="55%" alt=""/>
   <p style="font-style: italic; color: gray;">▲ READ UNCOMMITTED</p>
 </figure>
 
@@ -50,7 +50,7 @@ READ UNCOMMITTED 는 정합성에 문제가 많은 격리 수준으로 DB 에서
 ## 3. READ COMMITTED
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/183228248-c8297b3c-3a50-4e35-adff-07e67e77e58e.png" width="55%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/183228248-c8297b3c-3a50-4e35-adff-07e67e77e58e.png" width="55%" alt=""/>
   <p style="font-style: italic; color: gray;">▲ READ COMMITTED</p>
 </figure>
 
@@ -65,7 +65,7 @@ READ COMMITTED 는 __커밋이 완료된 데이터만 다른 트랜잭션에서 
 그러나 아래와 같이 NON-REPEATABLE READ 문제가 발생할 수 있습니다.     
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/183228795-3386d795-5f9b-4a93-bdfd-33529ad09bb2.png" width="55%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/183228795-3386d795-5f9b-4a93-bdfd-33529ad09bb2.png" width="55%" alt=""/>
   <p style="font-style: italic; color: gray;">▲ NON-REPEATABLE READ</p>
 </figure>
 
@@ -75,7 +75,7 @@ READ COMMITTED 는 __커밋이 완료된 데이터만 다른 트랜잭션에서 
 ## 4. REPEATABLE READ
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/183229362-92bc0a75-247b-4f09-be60-0bab690f9860.png" width="55%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/183229362-92bc0a75-247b-4f09-be60-0bab690f9860.png" width="55%" alt=""/>
   <p style="font-style: italic; color: gray;">▲ REPEATABLE READ</p>
 </figure>
 
@@ -98,7 +98,7 @@ REPEATABLE READ 는 NON_REPEATABLE READ 문제를 해결하지만
 아래와 같이 PHANTOM READ 문제가 발생할 수 있습니다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/183229479-a674373d-2c92-4970-934e-be4d9a6041da.png" width="55%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/183229479-a674373d-2c92-4970-934e-be4d9a6041da.png" width="55%" alt=""/>
   <p style="font-style: italic; color: gray;">▲ PHANTOM READ</p>
 </figure>
 

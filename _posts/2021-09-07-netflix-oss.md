@@ -21,7 +21,7 @@ eureka 는 서비스가 죽었는지 수시로 확인해 목록을 동적으로 
 정해진 서비스 목록으로도 가능하지만, 주로 Eureka 와 연동해 서비스 목록에 맞게 로드밸런싱 해준다.   
 그리고 API gateway 에서도 로드밸런싱을 위해 종종 사용한다.   
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/132364769-8c4928d9-99e8-4e7f-8dae-739bfa80b881.png" height="300" />
+  <img src="https://user-images.githubusercontent.com/13375810/132364769-8c4928d9-99e8-4e7f-8dae-739bfa80b881.png" height="300"  alt=""/>
 </figure>
 
 ## 3. hystrix
@@ -39,6 +39,6 @@ zuul 은 클라이언트에서 보내는 다양한 형태의 트래픽과 많은
 filter 는 요청 라우팅, Rate Limiting, 인증, 모니터링, 부하테스트 기능을 제공한다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/132366255-c9c560be-bfc6-483b-902b-dfdcbcaa2f9d.png" height="500" />
+  <img src="https://user-images.githubusercontent.com/13375810/132366255-c9c560be-bfc6-483b-902b-dfdcbcaa2f9d.png" height="500"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 – https://medium.com/netflix-techblog/announcing-zuul-edge-service-in-the-cloud-ab3af5be08ee</p>
 </figure>

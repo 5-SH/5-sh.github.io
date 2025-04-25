@@ -10,7 +10,7 @@ tags: [patterns, concurrency, lock]
 충돌이 감지되면 트랜잭션을 롤백해 동시 비즈니스 트랜잭션 간의 충돌을 방지한다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/178661312-4ea92dbb-d330-45bd-a166-1e42d4e70da0.jpg" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/178661312-4ea92dbb-d330-45bd-a166-1e42d4e70da0.jpg" width="75%" alt=""/>
 </figure>
 
 ### 1-1

@@ -17,7 +17,7 @@ tags: [patterns, dispatcher, reactor]
 ## 1. Blocking / Sync
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/212038614-c5583a65-3f06-47aa-901f-9f338b098ee7.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/212038614-c5583a65-3f06-47aa-901f-9f338b098ee7.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">Blocking / Sync</p>
 </figure>  
 
@@ -30,7 +30,7 @@ tags: [patterns, dispatcher, reactor]
 애플리케이션의 실행이 블로킹 되지 않아 IO 를 기다리는 동안 다른 작업을 할 수 있지만 IO 가 준비 되었는지 매번 확인해야 하기 때문에 비효율적 입니다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/212041158-eb95f652-973e-442e-8529-b7fedde318c9.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/212041158-eb95f652-973e-442e-8529-b7fedde318c9.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">Non blocking / Sync</p>
 </figure>  
 
@@ -40,7 +40,7 @@ tags: [patterns, dispatcher, reactor]
 리눅스의 select(), poll(), epoll() 같은 시스템 콜을 사용하면 커널이 데이터가 준비 되었을 때 ready 이벤트로 알려줍니다.     
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/212043951-53fe80b5-b985-4ea3-9990-48b5a49c3584.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/212043951-53fe80b5-b985-4ea3-9990-48b5a49c3584.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">Non blocking / Async</p>
 </figure>  
 
@@ -50,7 +50,7 @@ tags: [patterns, dispatcher, reactor]
 ### 3-1. Linux - select() system call
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/212045289-2d0912bf-7c11-478a-817f-f94ecdebab9d.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/212045289-2d0912bf-7c11-478a-817f-f94ecdebab9d.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">Non blocking / Async</p>
 </figure>  
 
@@ -68,7 +68,7 @@ tags: [patterns, dispatcher, reactor]
 epoll 시스템 콜을 활용한 비동기/논블로킹에 리액터 패턴을 적용한 구조는 아래와 같습니다.    
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/212048112-a2d1bb86-b6f9-4abf-975e-f9c2dddd7a11.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/212048112-a2d1bb86-b6f9-4abf-975e-f9c2dddd7a11.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">epoll</p>
 </figure>  
 
@@ -80,7 +80,7 @@ NIO 는 소켓, 파일과 같은 IO 대상을 __Channel__ 로 추상화 했고 �
 각 handle 은 handler 를 통해 처리됩니다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/211336950-a7aba4b0-2ce4-4799-90b3-38be8cc94514.jpg" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/211336950-a7aba4b0-2ce4-4799-90b3-38be8cc94514.jpg" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">동기 이벤트 디멀티플렉서를 활용한 리액터 패턴 구조도</p>
 </figure>  
 

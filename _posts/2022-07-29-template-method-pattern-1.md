@@ -15,7 +15,7 @@ tags: [patterns, template, method, spring, jdbc]
 ### 1-1. 클래스 다이어그램
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/181702608-3b5f5ef1-fdb5-4120-91a8-100f5cda821b.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/181702608-3b5f5ef1-fdb5-4120-91a8-100f5cda821b.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;"></p>
 </figure>
 

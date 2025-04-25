@@ -13,7 +13,7 @@ EC 는 실행 컨텍스트 스택(콜 스택) 에 추가된다.
 
 ## 1. 실행 컨텍스트 구조
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/136986797-d55aa7c6-ea42-4011-a83d-ab8264038473.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/136986797-d55aa7c6-ea42-4011-a83d-ab8264038473.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://poiemaweb.com/js-execution-context</p>
 </figure>
 
@@ -48,7 +48,7 @@ foo();
 ```
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/136993805-a6a93866-c7b7-4795-972f-fa009704b5e4.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/136993805-a6a93866-c7b7-4795-972f-fa009704b5e4.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://poiemaweb.com/js-execution-context</p>
 </figure>
 

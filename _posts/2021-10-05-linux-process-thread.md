@@ -10,13 +10,13 @@ tags: [linux, process, thread]
 ## 1. 프로세스
 - 프로세스 컨트롤 블록(PCB) : 프로세스를 관리하기 위해 커널에서 사용하는 자료구조
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/136038529-03d33917-420f-4ae6-8680-88cd99fea9c8.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/136038529-03d33917-420f-4ae6-8680-88cd99fea9c8.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://enlqn1010.tistory.com/26</p>
 </figure>
 
 - 프로세스 상태
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/136038979-ea3129cc-1612-45c3-9b77-8ba82e3782dd.jpg" />
+  <img src="https://user-images.githubusercontent.com/13375810/136038979-ea3129cc-1612-45c3-9b77-8ba82e3782dd.jpg"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://rebas.kr/852</p>
 </figure>
 
@@ -51,12 +51,12 @@ main() {
   - 사용자 스레드는 커널 스레드를 배정 받아 실행된다.
   - 대부분의 운영체제들은 일대일 모델을 사용한다. 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/136040819-a0b6369d-2477-4718-9702-1c39468ecc02.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/136040819-a0b6369d-2477-4718-9702-1c39468ecc02.png"  alt=""/>
 </figure>
 
 - 스케줄러 액티베이션
   - 커널 스레드와 사용자 스레드 lib 의 통신 방법이다.
   - 사용자 스레드는 커널 스레드에서 제공하는 LWP(Light Weight Process) 위에서 동작한다.
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/136041449-88d9ea0a-d535-4feb-a32f-dd732dd3ecb6.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/136041449-88d9ea0a-d535-4feb-a32f-dd732dd3ecb6.png"  alt=""/>
 </figure>

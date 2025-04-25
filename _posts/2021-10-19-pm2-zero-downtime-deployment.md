@@ -64,7 +64,7 @@ node.js 애플리케이션을 실행한다고 가정할 때, pm2 에서 fork 모
 실행 결과는 아래와 같이 4개의 프로세스가 실행된다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/137768696-4ef8e80b-bbcb-42ce-8f49-871d6f23ad7f.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/137768696-4ef8e80b-bbcb-42ce-8f49-871d6f23ad7f.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://engineering.linecorp.com/ko/blog/pm2-nodejs/</p>
 </figure>
 
@@ -110,7 +110,7 @@ $ pm2 reload app
 ## 2. pm2 reload 재시작 과정
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/137770333-1c3c8ec9-0307-4868-b9ca-d84828893575.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/137770333-1c3c8ec9-0307-4868-b9ca-d84828893575.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://engineering.linecorp.com/ko/blog/pm2-nodejs/</p>
 </figure>
 
@@ -126,7 +126,7 @@ $ pm2 reload app
 ### 3-1. 새로 만들어진 프로세스가 아직 요청을 받을 준비가 안되었는데 ready 이벤트를 보내는 경우
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/137771954-78aeaf74-9228-4285-ab6f-ca5dbbf2f04f.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/137771954-78aeaf74-9228-4285-ab6f-ca5dbbf2f04f.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://engineering.linecorp.com/ko/blog/pm2-nodejs/</p>
 </figure>
 
@@ -167,14 +167,14 @@ module.exports = {
 ready 이벤트 설정 변경 후 아래 그림과 같다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/137773276-7f951585-da2e-4099-b65c-b8823dc9e9e4.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/137773276-7f951585-da2e-4099-b65c-b8823dc9e9e4.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://engineering.linecorp.com/ko/blog/pm2-nodejs/</p>
 </figure>
 
 ### 3-2. 클라이언트 요청을 처리하는 도중에 프로세스가 죽어버리는 경우
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/137774178-da169301-6f93-4668-8825-a45f348612aa.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/137774178-da169301-6f93-4668-8825-a45f348612aa.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://engineering.linecorp.com/ko/blog/pm2-nodejs/</p>
 </figure>
 
@@ -230,7 +230,7 @@ process.on(‘SIGINT’, function () {
 하지만  HTTP 1.1 Keep Alive 를 사용해 요청이 처리된 후에도 기존 연결이 계속 유지된다면 문제가 해결되지 않는다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/137774946-4df4e0d2-a78f-4152-90b3-2573b05366df.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/137774946-4df4e0d2-a78f-4152-90b3-2573b05366df.png"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://engineering.linecorp.com/ko/blog/pm2-nodejs/</p>
 </figure>
 

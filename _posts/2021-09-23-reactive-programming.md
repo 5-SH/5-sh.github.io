@@ -13,7 +13,7 @@ tags: [patterns, reactive programming, flow, flux]
 Processor 는 Publisher 와 Subscriber 사이에 위치하며 데이터의 한 스트림을 다른 스트림으로 변환한다.   
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/134385538-698888bb-9a57-419b-9846-2f0a3eeec880.jpg" />
+  <img src="https://user-images.githubusercontent.com/13375810/134385538-698888bb-9a57-419b-9846-2f0a3eeec880.jpg"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://jhleed.tistory.com/99</p>
 </figure>
 
@@ -47,7 +47,7 @@ public static interface Flow.Processor<T, R> extends Flow.Subscriber<T>, Flow.Pu
 ```
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/134388511-7727b796-5cd3-4d6e-aaa9-e2fdf36a2ebf.png" height="450" />
+  <img src="https://user-images.githubusercontent.com/13375810/134388511-7727b796-5cd3-4d6e-aaa9-e2fdf36a2ebf.png" height="450"  alt=""/>
 </figure>
 
 ## 3. WebFlux

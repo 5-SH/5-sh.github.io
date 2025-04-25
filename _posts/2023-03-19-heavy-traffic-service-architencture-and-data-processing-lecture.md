@@ -669,7 +669,7 @@ client #4   /  \    API server #4   /             \
 이를 통해 마이페이지에 포인트 변경 내역을 실시간으로 보여줄 수 있다.   
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/227813602-f9f6aa99-c60c-404f-811f-77743e063528.jpg" height="250" />
+  <img src="https://user-images.githubusercontent.com/13375810/227813602-f9f6aa99-c60c-404f-811f-77743e063528.jpg" height="250"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ The Red : 4천만 MAU를 지탱하는 서비스 설계와 데이터 처리 기술</p>
 </figure>
 
@@ -725,7 +725,7 @@ RDBMS, Pub/Sub 패턴, 실시간/시계열 DB, NoSQL 을 활용해 문제를 적
 결제 발생 때 마다 일별 매출 합계 테이블을 업데이트 하는 방식으로 해결할 수 있다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/227813602-f9f6aa99-c60c-404f-811f-77743e063528.jpg" height="250" />
+  <img src="https://user-images.githubusercontent.com/13375810/227813602-f9f6aa99-c60c-404f-811f-77743e063528.jpg" height="250"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ The Red : 4천만 MAU를 지탱하는 서비스 설계와 데이터 처리 기술</p>
 </figure>
 

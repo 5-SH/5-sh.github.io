@@ -8,7 +8,7 @@ tags: [java, collection]
 # 자바 컬렉션 종류와 특징
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/169449431-4d570e2f-ad09-4554-a839-d98457c7bb73.jpg" height="350" />
+  <img src="https://user-images.githubusercontent.com/13375810/169449431-4d570e2f-ad09-4554-a839-d98457c7bb73.jpg" height="350"  alt=""/>
   <p style="font-style: italic; color: gray;">출처 - https://memostack.tistory.com/234</p>
 </figure>
 

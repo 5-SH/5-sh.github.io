@@ -71,7 +71,7 @@ TO-BE
 | 2303   | COVER  | 12900 |
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/139792246-83570533-113a-4c0c-bdb3-2334e70e3693.png" height="250"/>
+  <img src="https://user-images.githubusercontent.com/13375810/139792246-83570533-113a-4c0c-bdb3-2334e70e3693.png" height="250" alt=""/>
 </figure>
 
 
@@ -107,7 +107,7 @@ TO-BE
 
 <figure>
   <img src="https://user-images.githubusercontent.com/13375810/139792941-13ee05ec-1c9f-40ee-92d1-db3697a2a492.png" height="250"/
-</figure>
+</figure alt="">
 
 
 
@@ -149,6 +149,6 @@ TO-BE
 | P04  | DB       |
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/139793350-f773432a-a10e-443b-aa74-3e540292dcf1.png" height="350"/>
+  <img src="https://user-images.githubusercontent.com/13375810/139793350-f773432a-a10e-443b-aa74-3e540292dcf1.png" height="350" alt=""/>
 </figure>
 

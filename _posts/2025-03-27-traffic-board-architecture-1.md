@@ -52,7 +52,7 @@ N번 페이지의 M개의 게시글 정보는 limit와 offset 연산으로 조�
 ((N - 1) / K + 1) * M * K + 1로 조회해 성능을 개선할 수 있다.
 
 <figure>
-  <img src="https://i.imgur.com/24cOlX5.jpeg" height="100" />
+  <img src="https://i.imgur.com/24cOlX5.jpeg" height="100"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ 구글 페이징</p>
 </figure>
 
@@ -111,7 +111,7 @@ Secondary Index에서 offset 만큼 스캔을 할 때 매번 Clustered Index의 
 그래서 offset 크기인 1,500,000번 만큼 실제 row를 가져오기 때문에 속도가 느려지게 된다.   
 
 <figure>
-  <img src="https://i.imgur.com/7eB1cHz.png" height="350" />
+  <img src="https://i.imgur.com/7eB1cHz.png" height="350"  alt=""/>
   <p style="font-style: italic; color: gray;">▲ 데이터블록 인덱스/출처: https://velog.io/%40minbo2002/coveringIndex</p>
 </figure>
 

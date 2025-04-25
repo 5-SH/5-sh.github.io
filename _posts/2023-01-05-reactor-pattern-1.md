@@ -23,7 +23,7 @@ tags: [patterns, dispatcher, reactor]
 이 문제를 메시지를 처리할 로직을 선택하는 __디스패처__ 와 메시지의 요청을 처리하는 __프로토콜__ 를 사용해 해결합니다.    
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/210794541-d1b698ea-8a11-402a-aa6b-ba148d3d0fe9.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/210794541-d1b698ea-8a11-402a-aa6b-ba148d3d0fe9.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">디스패처 패턴 구조도</p>
 </figure>  
 
@@ -177,14 +177,14 @@ Dispatcher 의 demltiplex 에 switch 구문에 case 를 계속 추가해야 하�
 각 메시지에 적절한 핸들러를 찾아 처리하도록 개발합니다.    
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/210799185-4179db0a-f450-4611-b17b-45cc243d8b8e.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/210799185-4179db0a-f450-4611-b17b-45cc243d8b8e.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">리액터 패턴 구조도</p>
 </figure>  
 
 핸들러 맵은 아래 그림과 같이 구성되어 있습니다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/210799457-27365498-efc4-4545-8b8d-6559859f4324.png" width="45%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/210799457-27365498-efc4-4545-8b8d-6559859f4324.png" width="45%" alt=""/>
   <p style="font-style: italic; color: gray;">핸들러 맵 구조</p>
 </figure>  
 
@@ -370,7 +370,7 @@ public class Dispatcher {
 이 문제를 해결하기 위해 스레드 풀을 활용한 멀티스레드 형식으로 수정하겠습니다.   
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/210803022-e2b3e461-5803-450d-ac69-348daa5cdafa.png" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/210803022-e2b3e461-5803-450d-ac69-348daa5cdafa.png" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">스레드 풀을 활용한 구조</p>
 </figure>  
 

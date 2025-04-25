@@ -22,7 +22,7 @@ tags: [patterns, dispatcher, proactor, async, non-blocking]
 프로액터 패턴을 알아보기 전 리액터 패턴에 대해 먼저 알아 보겠습니다.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/211336950-a7aba4b0-2ce4-4799-90b3-38be8cc94514.jpg" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/211336950-a7aba4b0-2ce4-4799-90b3-38be8cc94514.jpg" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">동기 이벤트 디멀티플렉서를 활용한 리액터 패턴 구조도</p>
 </figure>  
 
@@ -42,7 +42,7 @@ Selector 는 IO Complete 이벤트를 기다리는 동안 블로킹 됩니다. �
 ## 2. Proactor 패턴 
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/212258018-a7e075ee-4372-4aa0-80ef-bbfb95f6f5dd.jpg" width="75%"/>
+  <img src="https://user-images.githubusercontent.com/13375810/212258018-a7e075ee-4372-4aa0-80ef-bbfb95f6f5dd.jpg" width="75%" alt=""/>
   <p style="font-style: italic; color: gray;">프로액터 패턴 구조도</p>
 </figure>  
 

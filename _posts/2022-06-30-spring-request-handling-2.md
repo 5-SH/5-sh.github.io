@@ -8,7 +8,7 @@ tags: [spring, servlet]
 # 스프링 요청 처리 과정 2
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/176543993-fdaa03fd-3a00-4c70-a996-c25e99b1d14a.png" />
+  <img src="https://user-images.githubusercontent.com/13375810/176543993-fdaa03fd-3a00-4c70-a996-c25e99b1d14a.png"  alt=""/>
   <p style="font-style: italic; color: gray;"></p>
 </figure>
 
