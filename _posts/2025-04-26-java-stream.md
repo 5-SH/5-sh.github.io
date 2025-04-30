@@ -259,6 +259,8 @@ public class LazyEvalMain3 {
 스트림 API의 collect 연산은 결과를 만들어 내는 최종 연산이고 이 때 최종 연산에 Collectors를 활용한다.   
 collect(Collector<? super T, A, R> collector) 형태를 주로 사용하고 Collectors 클래스 안에 준비된 여러 메서드를 통해서 다양한 수집 방식을 적용할 수 있다.   
 
+### Collectors의 주요 기능 
+
 |기능|메서드 예시|설명|반환 타입|
 |---|---|---|---|
 |List로 수집|toList(), toUnmodifiableList()|스트림 요소를 List로 모은다. toUnmodifiableList()는 불변 리스트를 만든다.|List<T>|
@@ -404,6 +406,7 @@ groupingBy(...)를 사용하면 그룹 별로 요소들을 묶을 수 있다. �
 다운스트림 컬렉터를 명시하지 않으면 Colelctors.toList()가 적용되어 그룹 별 요소들을 List로 모은다.   
 
 ### 다운스트림 컬렉터의 종류
+
 |Collector|사용 메서드 예시|설명|예시 반환 타입|
 |---|---|---|---|
 |counting()|Collectors.counting()|그룹 내 요소들의 개수를 센다.|Long|
