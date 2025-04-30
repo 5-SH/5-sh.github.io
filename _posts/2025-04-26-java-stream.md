@@ -7,9 +7,9 @@ tags: [lambda, stream, optional, functional programming]
 ---
 ### 강의 : [김영한의 실전 자바 - 고급 3편, 람다, 스트림, 함수형 프로그래밍](https://www.inflearn.com/course/%EA%B9%80%EC%98%81%ED%95%9C%EC%9D%98-%EC%8B%A4%EC%A0%84-%EC%9E%90%EB%B0%94-%EA%B3%A0%EA%B8%89-3/dashboard)
 
-# 1. 스트림 API - 기본
+## 1. 스트림 API - 기본
 
-## 1-1. 스트림 API 시작
+### 1-1. 스트림 API 시작
 
 map, filter 기능을 제공하는 MyStreamV3을 만들어 List<T> Collection에 원하는 연산을 선언적으로 구현할 수 있게 지원했다.    
 MyStreamV3을 사용해 작업을 어떻게 수행해야 하는지 보다 무엇을 수행해야 하는지에 집중할 수 있고 데이터가 물 흐르듯이 처리 되었다.   
@@ -48,7 +48,7 @@ public class StreamStartMain {
 - 최종 연산 : toList 메소드와 같이 중간 연산에서 정의한 연산의 최종 결과를 만들어 반환한다.   
 - 내부 반복 : forEach 메소드와 같이 스트림에 담긴 요소들을 내부적으로 반복해 가며 람다로 전달한 동작을 수행한다. 내부 반복을 사용하면 스트림이 알아서 반복문을 수행하기 때문에 개발자가 직접 for/while 문을 작성하지 않아도 된다.   
 
-## 1-2. 스트림 API란?
+### 1-2. 스트림 API란?
 Stream은 자바 8부터 추가된 기능으로 데이터의 흐름을 추상화해서 다루는 도구이다.   
 Collection 또는 배열 등의 요소들을 연산 파이프라인을 통해 연속적인 형태로 처리할 수 있게 해준다.   
 스트림은 5가지 특징을 가진다.   
@@ -58,7 +58,7 @@ Collection 또는 배열 등의 요소들을 연산 파이프라인을 통해 �
 - 지연 연산 : 중간 연산은 필요할 때 까지 동작하지 않고 최종 연산이 실행될 때 한 번에 처리된다.
 - 병렬 처리 : 병렬 스트림을 쉽게 만들 수 있어 병렬 연산을 단순한 코드로 작성할 수 있다.
 
-## 1-3. 일괄 처리 vs 파이프라인
+### 1-3. 일괄 처리 vs 파이프라인
 
 아래 코드와 같이 배열에서 짝수를 필터링하고 10을 곱한 값으로 매핑하는 연산을 MyStreamV3와 스트림 API로 실행하면,   
 결과는 같지만 연산을 처리하는 과정은 다르다.   
@@ -118,7 +118,7 @@ MyStreamV3의 일괄 처리 연산 순서는 다음과 같다.
 6. data(6) -> filter(6) -> map(6) -> 60 -> list(20, 40, 60)
 ```
 
-## 1-4. 지연 연산
+### 1-4. 지연 연산
 
 MyStreamV3는 즉시 연산을 하고 스트림 API는 최종 연산을 수행할 때만 작동한다.   
 MyStreamV3는 filter, map 같은 중간 연산이 호출될 때 마다 바로 연산을 수행하고 각각의 결과를 메모리에 저장한다.   
@@ -181,9 +181,9 @@ public class LazyEvalMain3 {
 }
 ```
 
-# 2. 스트림 API - 기능
+## 2. 스트림 API - 기능
 
-## 2-1. 스트림 생성
+### 2-1. 스트림 생성
 
 |생성 방법|코드 예시|특징|
 |---|---|---|
@@ -192,7 +192,7 @@ public class LazyEvalMain3 {
 |Stream.of(...)|Stream.of("a", "b", "c")|직접 요소를 입력해 스트림 생성|
 |무한 스트림(iterate)|Stream.iterate(0, n -> n + 2)|무한 스트림 생성 (초깃값 + 함수)
 
-## 2-2. 스트림 중간 연산
+### 2-2. 스트림 중간 연산
 
 |연산|설명|예시|
 |---|---|---|
@@ -207,7 +207,7 @@ public class LazyEvalMain3 {
 |takeWhile|조건을 만족하는 동안 요소 추출|stream.takeWhile(n -> n < 5)|
 |dropWhile|조건을 만족하는 동안 요소를 버리고 이후 요소 추출|stream.dropWhile(n -> n < 5)|
 
-## 2-3. 스트림 최종 연산
+### 2-3. 스트림 최종 연산
 
 |연산|설명|예시|
 |---|---|---|
@@ -223,7 +223,7 @@ public class LazyEvalMain3 {
 |anyMatch|하나라도 조건을 만족하는지 (boolean)|stream.allMatch(n -> n > 0)|
 |allMatch|모두 조건을 만족하는지 (boolean)|stream.allMatch(n -> n > 0)|
 
-## 2-4. 기본형 특화 스트림
+### 2-4. 기본형 특화 스트림
 
 기본형 특화 스트림은 int, long, double 자료형에 합계, 평균, 최솟값, 최댓값 등 정수와 관련된 편리한 연산을 제공한다.   
 
@@ -233,7 +233,7 @@ public class LazyEvalMain3 {
 |LongStream|long|LongStream.of(10L, 20L), LongStream.range(1, 10), mapToLong(...)
 |DoubleStream|double|DoubleStream.of(3.14, 2.78), DoubleStream.generate(Matho::random), mapToDouble(...)|
 
-### 주요 기능 및 메서드
+#### 주요 기능 및 메서드
 
 |메서드 / 기능|설명|예시|
 |---|---|---|
@@ -245,7 +245,7 @@ public class LazyEvalMain3 {
 |boxed()|기본형 특화 스트림을 박싱(Wrapper)된 객체 스트림으로 변환|Stream<Integer> si = IntStream.range(1, 5).boxed()|
 |min(), max(), count()|합계, 최솟값, 최댓값, 개수를 반환(타입 별로 int/long/double 반환)|long count = LongStream.of(1, 2, 3).count()|
 
-## 2-5. 성능 - for문 vs 스트림 vs 기본형 특화 스트림
+### 2-5. 성능 - for문 vs 스트림 vs 기본형 특화 스트림
 
 스트림은 박싱/언박싱 오버헤드가 발생해 for문이 스트림보다 1.5~2배 정도 빠르다.   
 기본형 특화 스트림은 for문에 가까운 성능을 낸다.   
@@ -253,13 +253,13 @@ public class LazyEvalMain3 {
 수천만 건 이상 반복하는 루프를 많이 수행해야 의미있는 속도 차이가 발생할 수 있다.    
 실무에서 극단적인 성능이 필요한 경우가 아니라면 코드의 가독성과 유지보수성을 위해 스트림 API를 사용하는 것이 보통 더 나은 선택이다. 
 
-# 3. 스트림 API - 컬렉터
+## 3. 스트림 API - 컬렉터
 
 스트림이 중간 연산을 거쳐 최종 연산으로 데이터를 처리할 때 리스트나 맵 같은 자료 구조에 담거나 통계 데이터를 내는 등의 결과가 필요할 수 있다.    
 스트림 API의 collect 연산은 결과를 만들어 내는 최종 연산이고 이 때 최종 연산에 Collectors를 활용한다.   
 collect(Collector<? super T, A, R> collector) 형태를 주로 사용하고 Collectors 클래스 안에 준비된 여러 메서드를 통해서 다양한 수집 방식을 적용할 수 있다.   
 
-### Collectors의 주요 기능 
+#### Collectors의 주요 기능 
 
 |기능|메서드 예시|설명|반환 타입|
 |---|---|---|---|
@@ -398,14 +398,14 @@ public class Collertors {
 }
 ```
 
-# 4. 스트림 API - 다운스트림 컬렉터
+## 4. 스트림 API - 다운스트림 컬렉터
 
 groupingBy(...)를 사용하면 그룹 별로 요소들을 묶을 수 있다. 이 때, 다운스트림 컬렉터를 사용하면 그룹 내부를 다시 모으거나 집계할 수 있다.   
 다운스트림 컬렉터는 그룹화된 이후 각 그룹 내부에서 추가적인 연산 또는 결과물(예: 평균, 합계, 최댓값, 최솟값, 통계, 다른 타입으로 변환 등)을 정의한다.   
 다운스트림 컬렉터는 Collectors.groupingBy(...) 또는 Collectors.partitioningBy(...)에서 두 번째 인자로 전달되는 Collector 이다.   
 다운스트림 컬렉터를 명시하지 않으면 Colelctors.toList()가 적용되어 그룹 별 요소들을 List로 모은다.   
 
-### 다운스트림 컬렉터의 종류
+#### 다운스트림 컬렉터의 종류
 
 |Collector|사용 메서드 예시|설명|예시 반환 타입|
 |---|---|---|---|
@@ -497,7 +497,7 @@ public class DownStreamMain {
 }
 ```
 
-### mapping() vs collectingAndThen()
+#### mapping() vs collectingAndThen()
 
 mapping()은 그룹화된 요소 하나하나를 변환하는데 사용하고, collectingAndThen()은 이미 만들어진 전체 그룹의 결과를 한 번 더 처리해 결과를 만드는데 사용한다.   
 
