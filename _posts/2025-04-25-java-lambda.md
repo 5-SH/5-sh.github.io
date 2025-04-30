@@ -656,7 +656,7 @@ public class MethodRefStartV3 {
 |정적 메서드 참조|클래스명::메서드명|Math:mmax, Integer::parseInt|
 |특정 객체의 인스턴스 메서드 참조|객체명::인스턴스메서드명|person::introduce, person::getName|
 |생성자 참조|클래스명::new|Person::new|
-|임의 객체의 인스턴스 메서드 참조|클래스명::인스턴스메서드명|Person::introduce, (Person p) -> p.introduce|
+|임의 객체의 인스턴스 메서드 참조|클래스명::인스턴스메서드명|Person::introduce, (Person p) -> p.introduce()|
 
 함수형 인터페이스의 시그니처에 매개변수와 반환 타입이 정해져 있고 컴파일러가 시그니처를 바탕으로 메서드 참조와 연결해 주기 때문에,    
 메서드 참조에서 명시적으로 매개변수를 작성하지 않아도 된다.   
