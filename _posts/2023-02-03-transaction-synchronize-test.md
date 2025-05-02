@@ -86,23 +86,16 @@ public class UserService {
     });
   }
 
-  public void addAllAndUpdateUserWithException(List<String> nameList) {
-    this.transactionTemplate.execute(status -> {
-      for (String name : nameList) {
+  public void addUserAllWithExceptionNotAppliedTx(List<String> nameList) {
+    String exceptionName = nameList.get(nameList.size() - 1);
+    for (String name : nameList) {
+      if (name.equals(exceptionName)) {
+        userDao.addUserWithException(name);
+      } else {
         userDao.addUser(name);
       }
-      int count1 = userDao.getUserCount();
-      System.out.println("after add user all count : " + count1);
-
-      userDao.deleteUser(3);
-
-      int count2 = userDao.getUserCount();
-      System.out.println("after delete user count : " + count2);
-
-      userDao.updateUserWithException(2, "update2");
-
-      return null;
-    });
+      System.out.println("after add user count : " + userDao.getUserCount());
+    }
   }
 
   ...
@@ -139,6 +132,7 @@ class JdbctemplatedemoApplicationTests {
 	} 
 
   ...
+  
   @Test
 	void addAllOrNothing() {
 		try {
