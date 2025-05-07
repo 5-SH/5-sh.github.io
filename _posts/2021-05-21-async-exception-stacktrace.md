@@ -52,9 +52,9 @@ async function funcOne() {
     setTimeout(() => {
       resolve();
     }, 1000);
-
-    throw new Error('Error here prints the complete stack');
   });
+  
+  throw new Error('Error here prints the complete stack');
 }
 
 async function funcTwo() {
