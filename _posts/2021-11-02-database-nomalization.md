@@ -106,7 +106,7 @@ TO-BE
 | PARK   | 박보영 | 일반     |
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/13375810/139792941-13ee05ec-1c9f-40ee-92d1-db3697a2a492.png" height="250"/
+  <img src="https://user-images.githubusercontent.com/13375810/139792941-13ee05ec-1c9f-40ee-92d1-db3697a2a492.png" height="250"/>
 </figure alt="">
 
 
