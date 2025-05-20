@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Java - 함수형 프로그래밍
+title: Java - 디폴트 메서드 / 병렬 스트림
 date: 2025-04-25 21:00:00 + 0900
 categories: [java]
 tags: [lambda, stream, optional, functional programming]
@@ -371,3 +371,243 @@ public class ForkJoinMain2 {
 ```
 
 ### 2-5. 자바 병렬 스트림
+
+자바 스트림에서 ```parallel()```을 추가하면 여러 스레드가 병렬로 heavyTask를 처리한다.   
+직접 스레드나 스레드 풀을 만들 필요 없이 ```parallel()``` 호출만으로 스트림이 자동으로 병렬 처리 되었다.   
+```parallel()```을 호출하면 위에서 설명한 공용 ```ForkJoinPool```을 사용하고 내부적으로 ```Spliterator```를 통해 병렬 처리 가능한 스레드 숫자와 작업의 크기 등을 고려해 작업을 자동 분할하고 병렬 처리를 한다.   
+```Spliterator```를 통한 분할은 데이터 소스의 특성에 따라 최적화 되어 있다.    
+따라서 개발자가 ```parallel()```을 선언하면 병렬처리 방법은 자바 스트림이 내부적으로 알아서 처리한다.   
+
+```java
+public class ParallelMain4 {
+
+    public static void main(String[] args) {
+        int processorCount = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool commonPool = ForkJoinPool.commonPool();
+        log("processorCount = " + processorCount + ", commonPool = " + commonPool.getParallelism());
+
+        long startTime = System.currentTimeMillis();
+
+        int sum = IntStream.rangeClosed(1, 8)
+                .parallel()
+                .map(HeavyJob::heavyTask)
+                .sum();
+
+        long endTime = System.currentTimeMillis();
+        log("time: " + (endTime - startTime) + "ms, sum: " + sum);
+    }
+}
+
+public class HeavyJob {
+
+    public static int heavyTask(int i) {
+        MyLogger.log("calculate " + i + " -> " + i * 10);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return i * 10;
+    }
+
+    public static int heavyTask(int i, String name) {
+        MyLogger.log("[" + name + "] " + i + " -> " + i * 10);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return i * 10;
+    }
+}
+```
+
+```
+08:04:41.652 [     main] processorCount = 16, commonPool = 15
+08:04:41.670 [     main] calculate 6 -> 60
+08:04:41.670 [ForkJoinPool.commonPool-worker-1] calculate 3 -> 30
+08:04:41.670 [ForkJoinPool.commonPool-worker-3] calculate 4 -> 40
+08:04:41.670 [ForkJoinPool.commonPool-worker-2] calculate 2 -> 20
+08:04:41.670 [ForkJoinPool.commonPool-worker-5] calculate 1 -> 10
+08:04:41.670 [ForkJoinPool.commonPool-worker-4] calculate 8 -> 80
+08:04:41.670 [ForkJoinPool.commonPool-worker-6] calculate 7 -> 70
+08:04:41.670 [ForkJoinPool.commonPool-worker-7] calculate 5 -> 50
+08:04:42.688 [     main] time: 1034ms, sum: 360
+```
+
+#### 2-5-1. 병렬 스트림 사용 시 주의점 (1)
+
+Fork/Join 공용 풀은 계산 직약적인 CPU 바운드 작업을 위해 설계 되었다.   
+따라서 스레드가 주로 대기해야 하는 I/O 바운드 작업에는 적합하지 않다.   
+
+1. 스레드 블로킹에 따른 CPU 낭비
+    - ```ForkJoinPool```은 CPU 코어 수에 맞춰 제한된 개수의 스레드를 사용한다.
+    - I/O 작업으로 스레드가 블로킹되면 CPU가 놀게 되어, 전체 병렬 처리 효율이 크게 떨어진다.
+
+2. 컨텍스트 스위칭 오버헤드 증가
+    - I/O 작업 때문에 스레드를 늘리면, 실제 연산보다 대기 시간이 길어지는 상황이 발생할 수 있다.
+    - 스레드가 많아질 수록 컨텍스트 스위칭 비용도 증가해 오히려 성능이 떨어질 수 있다.
+
+3. 작업 훔치기 기법 무력화
+    - ```ForkJoinPool```이 제공하는 작업 훔치기 알고리즘은 CPU 바운드 작업에서 빠르게 작업 단위를 계속 처리 하도록 작업을 훔쳐서 쉬는 스레드 없이 계속 작업하도록 만들어져 있다.
+    - I/O 대기 시간이 많은 작업은 스레드가 I/O로 인해 대기하고 있는 경우가 많아 작업 훔치기가 동작하기 어렵고 병렬 처리의 장점을 살리기 어렵다.   
+
+4. 분할-정복 이점 감소
+    - Fork/Join으로 작업을 작게 나눠도 I/O 병목이 발생하면 CPU 병렬화 이점이 크게 줄어든다.
+    - 오히려 분할된 작업들이 I/O 대기를 반복하면서 ```fork()```, ```join()```에 따른 오버헤드만 증가할 수 있다.   
+
+아래 예제는 여러 사용자가 동시에 서버를 호출하고 각 요청을 병렬 스트림을 사용해 몇 가지 무거운 작업을 처리한다.   
+그리고 모든 요청이 동일한 공용 풀(```ForkJoinPool.commonPool```)을 공유하는 예제이다.   
+공용 풀의 병렬 수준을 3으로 제한하고 각 요청은 앞선 ```heavyTask```를 1~4 범위로 처리하고 ```parallel()``` 스트림을 사용해 작업을 처리한다.    
+```heavyTask()```는 1초간 스레드가 대기하는 작업이므로 I/O 바운드 작업에 가깝다.   
+
+```java
+public class ParallelMain5 {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        // 병렬 수준을 3으로 제한
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "3");
+
+        ExecutorService requestPool = Executors.newFixedThreadPool(100);
+
+        int nThreads = 3; // 1, 2, 3, 10, 20
+        for (int i = 1; i <= nThreads; i++) {
+            String requestName = "request" + i;
+            requestPool.submit(() -> logic(requestName));
+            Thread.sleep(100);
+        }
+
+        requestPool.close();
+    }
+
+    private static void logic(String requestName) {
+        log("[" + requestName + "] START");
+        long startTime = System.currentTimeMillis();
+
+        int sum = IntStream.rangeClosed(1, 4)
+                .parallel()
+                .map(i -> HeavyJob.heavyTask(i, requestName))
+                .reduce(0, (a, b) -> a + b);
+
+        long endTime = System.currentTimeMillis();
+        log("[" + requestName + "] time: " + (endTime - startTime) + "ms, sum: " + sum);
+    }
+}
+```
+
+3개의 요청 스레드가 작업을 요청하면 request1은 약 1초, request2는 약 2초, request3는 약 3초로 불균형하게 처리된다.   
+```nThread```의 숫자를 늘려서 동시 요청을 늘리면 응답시간이 확연하게 늘어난다.   
+모든 병렬 스트림이 동일한 공용 풀을 공유하므로 요청이 많아질수록 병목 현상이 발생한다. 제한된 스레드 풀에 여러 요청이 경쟁하게 되어 성능이 저하된다.   
+따라서 같은 작업이라도 동시에 실행되는 다른 작업의 수에 따라 처리 시간이 크게 달라지게 된다.   
+
+```
+08:35:30.290 [pool-1-thread-1] [request1] START
+08:35:30.310 [ForkJoinPool.commonPool-worker-3] [request1] 1 -> 10
+08:35:30.310 [ForkJoinPool.commonPool-worker-1] [request1] 2 -> 20
+08:35:30.310 [ForkJoinPool.commonPool-worker-2] [request1] 4 -> 40
+08:35:30.310 [pool-1-thread-1] [request1] 3 -> 30
+08:35:30.390 [pool-1-thread-2] [request2] START
+08:35:30.390 [pool-1-thread-2] [request2] 3 -> 30
+08:35:30.491 [pool-1-thread-3] [request3] START
+08:35:30.491 [pool-1-thread-3] [request3] 3 -> 30
+08:35:31.323 [ForkJoinPool.commonPool-worker-1] [request2] 4 -> 40
+08:35:31.323 [ForkJoinPool.commonPool-worker-3] [request3] 2 -> 20
+08:35:31.323 [ForkJoinPool.commonPool-worker-2] [request2] 2 -> 20
+08:35:31.324 [pool-1-thread-1] [request1] time: 1033ms, sum: 100
+08:35:31.391 [pool-1-thread-2] [request2] 1 -> 10
+08:35:31.493 [pool-1-thread-3] [request3] 4 -> 40
+08:35:32.325 [ForkJoinPool.commonPool-worker-3] [request3] 1 -> 10
+08:35:32.408 [pool-1-thread-2] [request2] time: 2018ms, sum: 100
+08:35:33.326 [pool-1-thread-3] [request3] time: 2835ms, sum: 100
+```
+
+```nThread```의 값을 20으로 해서 실행을 하면 Fork/Join 공용 풀에 병목이 생겨 모든 작업이 끝나는데 약 12초가 걸린다.   
+```parallel()```을 빼고 실행을 하면 20개의 요청 스레드가 작업을 처리해 약 4초만에 모든 작업이 완료된다.   
+따라서 I/O 바운드의 작업은 Fork/Join 공용 풀 보다는 별도의 스레드 풀을 사용하는 것이 좋다.   
+
+##### ※ 주의 실무에서 공용 풀은 절대 I/O 바운드 작업을 하면 안된다.
+
+애플리케이션 전체에서 공용 풀을 공유해서 사용하기 때문에 병목이 생기는 경우 모든 요청이 다 밀리게 된다.    
+예를 들어 외부 API를 호출하거나 데이터베이스 결과를 기다리는 경우에 응답이 늦게 온다면 공용 풀의 스레드가 I/O 응답을 대기하게 된다.   
+그러면 나머지 모든 요청들이 공용 풀의 스레드를 기다리며 다 밀리게 되는 큰 일이 발생한다.   
+따라서 공용 풀은 반드시 CPU 바운드 작업에만 사용하고 I/O 바운드 작업은 ExecutorService 등의 별도의 스레드 풀을 사용해야 한다.
+
+### 2-5-2. 병렬 스트림 사용 시 주의점 (2)
+
+별도의 전용 스레드 풀을 사용해서 I/O 바운드 작업을 처리한다.    
+```nThread```의 값을 20으로 실행을 하면 400개의 스레드를 갖는 별도의 스레드 풀에서 I/O 바운드를 처리해 약 1초만에 작업이 끝난다.   
+
+```java
+public class ParallelMain6 {
+
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService requestPool = Executors.newFixedThreadPool(100);
+
+        // logic 처리 전용 스레드 풀 추가
+        ExecutorService logicPool = Executors.newFixedThreadPool(400);
+
+        int nThreads = 20; // 1, 2, 3, 10, 20
+        for (int i = 1; i <= nThreads; i++) {
+            String requestName = "request" + i;
+            requestPool.submit(() -> logic(requestName, logicPool));
+            Thread.sleep(100);
+        }
+
+        requestPool.close();
+        logicPool.close();
+    }
+
+    private static void logic(String requestName, ExecutorService es) {
+        log("[" + requestName + "] START");
+        long startTime = System.currentTimeMillis();
+
+        List<Future<Integer>> futures = IntStream.rangeClosed(1, 4)
+                .mapToObj(i -> es.submit(() -> HeavyJob.heavyTask(i, requestName)))
+                .toList();
+
+        int sum = futures.stream()
+                .mapToInt(f -> {
+                    try {
+                        return f.get();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }).sum();
+
+        long endTime = System.currentTimeMillis();
+        log("[" + requestName + "] time: " + (endTime - startTime) + "ms, sum: " + sum);
+
+    }
+}
+```
+
+```
+08:55:46.140 [pool-1-thread-1] [request1] START
+08:55:46.159 [pool-2-thread-4] [request1] 4 -> 40
+08:55:46.159 [pool-2-thread-3] [request1] 3 -> 30
+08:55:46.159 [pool-2-thread-2] [request1] 2 -> 20
+08:55:46.159 [pool-2-thread-1] [request1] 1 -> 10
+08:55:46.226 [pool-1-thread-2] [request2] START
+08:55:46.226 [pool-2-thread-5] [request2] 1 -> 10
+08:55:46.226 [pool-2-thread-7] [request2] 3 -> 30
+08:55:46.226 [pool-2-thread-6] [request2] 2 -> 20
+08:55:46.226 [pool-2-thread-8] [request2] 4 -> 40
+...
+08:55:48.076 [pool-1-thread-10] [request10] time: 1002ms, sum: 100
+08:55:48.156 [pool-1-thread-20] [request20] START
+08:55:48.157 [pool-2-thread-78] [request20] 2 -> 20
+08:55:48.157 [pool-2-thread-79] [request20] 3 -> 30
+08:55:48.157 [pool-2-thread-80] [request20] 4 -> 40
+08:55:48.157 [pool-2-thread-77] [request20] 1 -> 10
+08:55:48.207 [pool-1-thread-11] [request11] time: 1018ms, sum: 100
+08:55:48.293 [pool-1-thread-12] [request12] time: 1003ms, sum: 100
+08:55:48.410 [pool-1-thread-13] [request13] time: 1003ms, sum: 100
+08:55:48.523 [pool-1-thread-14] [request14] time: 1016ms, sum: 100
+08:55:48.623 [pool-1-thread-15] [request15] time: 1015ms, sum: 100
+08:55:48.723 [pool-1-thread-16] [request16] time: 1015ms, sum: 100
+08:55:48.840 [pool-1-thread-17] [request17] time: 1016ms, sum: 100
+08:55:48.941 [pool-1-thread-18] [request18] time: 1001ms, sum: 100
+08:55:49.043 [pool-1-thread-19] [request19] time: 1002ms, sum: 100
+08:55:49.173 [pool-1-thread-20] [request20] time: 1017ms, sum: 100
+```
