@@ -1,9 +1,9 @@
 ---
 layout: post
-title: k8s 질문
+title: kubernetes 질문
 date: 2025-05-28 19:20:00 + 0900
-categories: [k8s]
-tags: [k8s]
+categories: [kubernetes]
+tags: [kubernetes, k8s]
 ---
 
 ### 책 : 컨테이너 인프라 환경 구축을 위한 쿠버네티스/도커
