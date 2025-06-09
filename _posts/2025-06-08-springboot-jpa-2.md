@@ -189,3 +189,86 @@ public class MemberService {
 |JdbcTemplate|JDBC를 쉽게 쓰기 위한 SQL 실행 도우미|
 |PlatformTransactionManager|트랜잭션을 시작하고 커밋하거나 롤백하는 컨트롤러|
 |함께 사용 가능|JdbcTemplate으로 작업하고 TransactionManager로 트랜잭션을 제어|
+
+
+### 13. 폼 데이터와 @ModelAttribute, @RequestParam 애노테이션 사용법을 정리해서 알려줘
+
+✅ 1. 공통 전제: HTML 폼에서 전송되는 데이터   
+HTML ```<form>```은 기본적으로 POST 방식과 application/x-www-form-urlencoded 콘텐츠 타입으로 데이터를 전송합니다:   
+
+```html
+<form action="/submit" method="post">
+  <input type="text" name="name">
+  <input type="number" name="age">
+  <button type="submit">전송</button>
+</form>
+```
+
+<br/>
+
+✅ 2. @RequestParam 사용   
+
+```java
+@PostMapping("/submit")
+public String handleSubmit(@RequestParam String name,
+                           @RequestParam int age) {
+    System.out.println("name = " + name);
+    System.out.println("age = " + age);
+    return "result";
+}
+```
+- 🔹 각각의 폼 필드를 하나씩 변수로 받음
+- 🔹 폼의 <input name="xxx"> 속성값과 변수 이름이 일치해야 함
+- 🔹 단순 폼이나 몇 개의 필드만 처리할 때 적합
+
+<br/>
+
+✅ 3. @ModelAttribute 사용   
+
+DTO 클래스 정의   
+
+```java
+public class MemberForm {
+    private String name;
+    private int age;
+
+    // Getter/Setter 필수
+}
+```
+
+컨트롤러   
+
+```java
+@PostMapping("/submit")
+public String handleSubmit(@ModelAttribute MemberForm form) {
+    System.out.println("name = " + form.getName());
+    System.out.println("age = " + form.getAge());
+    return "result";
+}
+```
+- 🔹 폼 필드가 많을 때 매우 유리
+- 🔹 이름이 일치하면 자동으로 필드에 바인딩됨
+- 🔹 객체가 자동으로 Model에 등록되어 뷰에서 ${form.name} 형태로 사용 가능
+
+<br/>
+
+✅ 4. 정리 비교표   
+
+|항목|@RequestParam|@ModelAttribute|
+|---|---|---|
+|사용 목적|개별 파라미터 바인딩|여러 파라미터 → 객체로 바인딩|
+|입력 필드 개수|적을 때 적합|많을 때 적합|
+|HTML name 매핑 방식|각 필드마다 직접 매핑|DTO 필드명과 name 일치하면 자동 매핑|
+|객체로 받기 가능 여부|❌ 불편 (수동 바인딩 필요)|✅ 자동으로 객체 생성 및 바인딩|
+|Model에 자동 등록 여부|❌ 기본은 안 됨|✅ 뷰에서 사용 가능|
+|기본값, 필수 여부 설정 가능|✅ required, defaultValue 사용 가능|⚠️ 객체 전체 기준, 개별 속성 제어는 별도로 필요|
+
+✅ 5. 언제 무엇을 써야 할까?    
+
+|상황|추천 방식|
+|---|---|---|
+|파라미터 수가 적다|@RequestParam|
+|여러 필드를 하나의 객체로 받고 싶다|@ModelAttribute|
+|뷰에서 객체 전체를 보여줘야 한다|@ModelAttribute|
+|JSON 요청이다|@RequestBody 사용 (※ 별도 주제)|
+
