@@ -368,7 +368,7 @@ public class Member {
 }
 ```
 
-```order``` → ```member와``` ```order``` → ```delivery```는 지연로딩 이므로 실제 엔티티 대신에 프록시가 존재한다.   
+```order``` → ```member``` ```order``` → ```delivery```는 지연로딩 이므로 실제 엔티티 대신에 프록시가 존재한다.   
 JSON 응답 형식을 만들 때 jackson 라이브러리는 지연 로딩을 위한 프록시 객체를 어떻게 json으로 생성해야 하는지 몰라 예외가 발생한다.   
 아래 에러 로그에서 ```bytebuddy```가 지연 로딩을 위한 프록시 객체이다.   
 
