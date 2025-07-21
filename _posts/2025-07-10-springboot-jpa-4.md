@@ -1,7 +1,7 @@
 ---
 layout: post
-title: 스프링 부트와 JPA 활용3
-date: 2025-07-10 22:40:00 + 0900
+title: 스프링 부트와 JPA 활용4
+date: 2025-07-10 19:10:00 + 0900
 categories: [spring]
 tags: [spring, jpa]
 ---
