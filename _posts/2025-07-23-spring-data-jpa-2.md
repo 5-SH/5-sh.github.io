@@ -340,8 +340,136 @@ Page<MemberDto> dtoPage = page.map(m -> new MemberDto());
 
 #### 3-9. 벌크성 수정 쿼리
 
+##### JPA를 사용한 벌크성 수정 쿼리
+
+```java
+@Repository
+public class MemberJpaRepository {
+    ...
+    public int bulkAgePlus(int age) {
+        return em.createQuery("update Member m set m.age = m.age + 1 where m.age >= :age")
+                .setParameter("age", age)
+                .executeUpdate();
+    }
+}
+```
+
+##### 스프링 데이터 JPA를 사용한 벌크성 수정 쿼리
+
+```java
+public interface MemberRepository extends JpaRepository<Member, Long> {    
+    ...
+    @Modifying(clearAutomatically = true)
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
+    ...
+}
+```
+
+스프링 데이터 JPA에서 ```@Query```를 쓰면 기본적으로 select 쿼리로 인식한다.   
+그래서 ```UPDATE```, ```CREATE```, ```DELETE``` 쿼리를 수행할 때는 ```@Modifying``` 애노테이션을 사용해야 한다.   
+사용하지 않으면 ```org.hibernate.hql.internal.QueryExecutionRequestException: Not supported for DML operations``` 예외가 발생한다.   
+```@Modifying```이 붙은 쿼리는 ```executeUpdate()```를 호출하고 영향을 받은 row 수를 ```int``` 타입으로 반환한다.   
+```@Modifying``` 애노테이션을 사용할 때는 트랜잭션이 꼭 필요하고 트랜잭션 없이 호출되면 예외가 발생한다.   
+
+<br/>
+
+벌크성 쿼리는 영속성 컨텍스트를 무시하고 실행하기 때문에 영속성 컨텍스트에 있는 엔티티의 상태와 DB의 엔티티 상태가 달라질 수 있다.   
+벌크성 쿼리 실행 후 ```findById```로 다시 조회하면 영속성 컨텍스트에 과거 값이 남아서 문제가 될 수 있다.    
+벌크성 쿼리를 실행하고 나서 다시 조회해야 하면 꼭 영속성 컨텍스트를 초기화 해야한다.   
+```@Modifying(clearAutomatically = true)```를 사용하면 벌크성 쿼리를 실행하고 나서 영속성 컨텍스트를 초기화 한다.   
 
 #### 3-10. @EntityGraph
 
+member → team과 같은 지연로딩 관계일 때 member 엔티티에서 team의 데이터를 조회할 때 마다 쿼리가 실행된다.   
+이 때 불필요한 쿼리가 호출되는 N+1 문제가 발생하고 해결을 위해 JPQL에서 fetch join을 사용한다.   
+
+스프링 데이터 JPA는 JPA가 제공하는 엔티티 그래프 기능을 편리하게 사용하도록 도와준다.    
+이 기능을 사용하면 JPQL 없이 fetch join을 사용할 수 있다.   
+
+```java
+public interface MemberRepository extends JpaRepository<Member, Long> { 
+    ...
+    // 공통 메서드 오버라이드
+    @Override
+    @EntityGraph(attributePaths = { "team" })
+    List<Member> findAll();
+
+    // JPQL + 엔티티 그래프
+    @EntityGraph(attributePaths = { "team" })
+    @Query("select m from Member m")
+    List<Member> findMemberEntityGraph();
+
+    // 메서드 이름으로 쿼리 + 엔티티 그래프
+    @EntityGraph(attributePaths = { "team" })
+    List<Member> findEntityGraphByUsername(@Param("username") String username);
+    ...
+}
+```
+
+EntityGraph가 기본적으로 INNER JOIN을 사용하는 fetch join과 다른 점은 LEFT OUTER JOIN을 사용하는 것이다.   
+왜냐하면 연관 엔티티가 없더라도 부모 엔티티는 조회되도록 하기 위해서이다.   
 
 #### 3-11. JPA Hint & Lock
+
+JPA 쿼리 힌트는 Hibernate와 같은 JPA 구현체에 추가적인 실행 지시사항을 제공하는 기능이다.   
+SQL 힌트가 아니라 JPA 구현체에서 제공하는 힌트이다.   
+
+일반적으로 읽기 전용 조회 최적화에 가장 많이 사용하고 아래와 같은 경우에도 사용한다.   
+
+- 읽기 전용 데이터를 영속성 컨텍스트에서 관리하지 않게 해서 성능 향상(Dirty check 최소화)
+- 특정 쿼리를 캐시에서 제외하거나 포함
+- Hibernate 등의 구현체에 최적화를 지시
+
+자주 쓰이는 힌트 종류는 아래와 같다.   
+
+|힌트|이름|설명|
+|---|---|---|
+|org.hibernate.readOnly|true면 읽기 전용 → dirty checking 하지 않음|
+|org.hibernate.cacheable|true면 2차 캐시에 캐싱|
+|org.hibernate.fetchSize|JDBC fetch size 설정|
+|org.hibernate.timeout|JDBC 쿼리 timeout 설정|
+|javax.persistence.query.timeout|밀리초 단위 쿼리 timeout 설정 (JPA 표준)|
+
+```java
+public interface MemberRepository extends JpaRepository<Member, Long> { 
+    ...
+    @QueryHints(value = @QueryHint( name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUsername(@Param("username") String username);
+    ...
+}
+
+@SpringBootTest
+@Transactional
+@Rollback(false)
+class MemberRepositoryTest {
+
+    @Autowired MemberRepository memberRepository;
+    @Autowired TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager em;
+    ...
+    @Test
+    public void queryHint() {
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush();
+        em.clear();
+
+        Member findMember = memberRepository.findReadOnlyByUsername("member1");
+        findMember.setUsername("member2"); // @QueryHint가 readOnly true라서 반영 안 됨
+
+        em.flush(); // Update Query가 실행되지 않음
+    }
+    ...
+}
+```
+
+##### 쿼리 힌트 Page 추가 예제
+
+반환 타입으로 ```Page``` 인터페이스를 적용하면 추가로 호출하는 페이징을 위한 count 쿼리도 쿼리 힌트 적용(기본값 ```true```)   
+
+```java
+@QueryHints(value = { @QueryHint(name = "org.hibernate.readOnly", value = "true")}, forCounting = true)
+ Page<Member> findByUsername(String name, Pageable pageable);
+```
