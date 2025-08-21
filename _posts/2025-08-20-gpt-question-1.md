@@ -775,6 +775,7 @@ exchange.getRequest().getCookies()      // 쿠키
 ##### 7-2-5. Body 읽기 (주의)
 
 exchange.getRequest().getBody()는 Flux<DataBuffer> 타입이고 WebFlux는 비동기/논블로킹이라 body는 한번만 읽을 수 있음   
+
 일반적으로 body를 다루는 필터는 복잡한 비동기 코드 필요
 
 ---
@@ -822,7 +823,7 @@ logger.info("Client IP: {}", clientIp);
 #### 8-2. 🔀 구조 예시
 
 ```
-[사용자 요청]
+           [사용자 요청]
                 |
          ┌──────▼──────┐
          │  라우터 / 로드밸런서 │
