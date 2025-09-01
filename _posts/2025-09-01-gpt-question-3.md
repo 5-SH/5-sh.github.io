@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Chat GPT 질문 2
+title: Chat GPT 질문 3
 date: 2025-09-01 21:30:00 + 0900
 categories: [question]
 tags: [spring, jpa]
@@ -873,3 +873,4 @@ EndpointsSlice-2
 - Endpoints = Service와 연결된 Pod IP 목록 (전통적인 방식)
 - EndpointsSlice = Endpoints를 여러 조각으로 나눈 버전 → 대규모 클러스터 최적화
 - Readiness Probe + Graceful Shutdown과 함께 사용하면 롤링 업데이트 중에도 안전하게 트래픽 분배 가능
+
