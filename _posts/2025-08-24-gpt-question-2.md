@@ -218,17 +218,17 @@ deployment.yaml (템플릿)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: {% raw %}{{ .Chart.Name }}{% endraw %}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {% raw %}{{ .Values.replicaCount }}{% endraw %}
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}
+        app: {% raw %}{{ .Chart.Name }}{% endraw %}
     spec:
       containers:
-      - name: {{ .Chart.Name }}
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+      - name: {% raw %}{{ .Chart.Name }}{% endraw %}
+        image: {% raw %}{{ .Values.image.repository }}:{% raw %}{{ .Values.image.tag }}{% endraw %}
         ports:
         - containerPort: 80
 ```
@@ -387,14 +387,14 @@ service:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: {% raw %}{{ .Chart.Name }}{% endraw %}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {% raw %}{{ .Values.replicaCount }}{% endraw %}
   template:
     spec:
       containers:
       - name: nginx
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{% raw %}{{ .Values.image.repository }}:{% raw %}{{ .Values.image.tag }}"{% endraw %}
 ```
 
 ##### 6-3-4. 🟢 _helpers.tpl
@@ -402,9 +402,9 @@ spec:
 재사용 가능한 헬퍼 함수 모음
 
 ```
-{{- define "mychart.fullname" -}}
-{{ .Release.Name }}-{{ .Chart.Name }}
-{{- end }}
+{% raw %}{{- define "mychart.fullname" -}}{% endraw %}
+{% raw %}{{ .Release.Name }}}{% endraw %}-{% raw %}{{ .Chart.Name }}{% endraw %}
+{% raw %}{{- end }}{% endraw %}
 ```
 
 ##### 6-3-5. 🟢 NOTES.txt
@@ -413,7 +413,7 @@ Chart 설치 후 사용자에게 보여줄 메시지
 
 ```
 1. Get the application URL by running these commands:
-   kubectl get svc {{ include "mychart.fullname" . }}
+   kubectl get svc {% raw %}{{ include "mychart.fullname" . }}{% endraw %}
 ```
 
 #### 6-4. 실행 흐름

@@ -950,7 +950,7 @@ data:
         gateway:
           routes:
             - id: backend-route
-              uri: http://{{ .Values.gateway.routeTarget }}-service  # blue-service or green-service
+              uri: http://{% raw %}{{ .Values.gateway.routeTarget }}{% endraw %}-service  # blue-service or green-service
               predicates:
                 - Path=/app/**
 ```
@@ -1106,7 +1106,7 @@ spec:
     spec:
       containers:
       - name: my-app-container
-        image: myregistry/my-app:{{ .Values.image.tag }}
+        image: myregistry/my-app:{% raw %}{{ .Values.image.tag }}{% endraw %}
   strategy:
     blueGreen:
       activeService: my-app-active
