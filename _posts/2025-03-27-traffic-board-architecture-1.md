@@ -100,6 +100,15 @@ article_id는 snowflake를 사용한 PK 이고 snowflake는 분산 시스템에�
 create index idx_board_id_article_id on article(board_id asc, artice_id desc);
 ```
 
+게시글을 조회하는 쿼리에서 ```idx_board_id_article_id``` 인덱스를 사용하도록 쿼리를 아래와 같이 수정한다.
+
+```sql
+select * from article
+where board_id = {board_id}
+order by article_id desc
+limit {limit} offset {offset};
+```
+
 board_id와 article_id로 생성한 인덱스를 Secondary Index라고 한다.    
 Secondary Index의 leaf node는 인덱스 정보인 board_id, article_id 값과 실제 row의 포인터를 갖고 있다.    
 그래서 Secondary Index에서 조회하고 전체 row 정보를 찾기 위해 포인터를 이용해 Clustered Index의 leaf node에 접근한다.   
