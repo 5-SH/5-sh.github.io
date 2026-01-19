@@ -35,6 +35,83 @@ CPU, 디스크, 네트워크 등의 운영에 필요한 지표를 모니터링 �
 CloudWatch의 운영 지표가 일정 수치를 넘어가면 알림을 받을 수 있다.   
 
 ## 3. Infrastructure as a Code(IaC)
+애플리케이션 소스코드를 작성하듯이 인프라 구성을 코드로 작성하고 자동화 도구로 배포하는 방식이다.   
+IaC를 사용하면 배포를 자동화 해 반복적인 수동 작업을 제거할 수 있고 배포 시간을 단축할 수 있다.   
+Git으로 인프라 변경 이력을 추적하고 관리할 수 있고 같은 패턴을 개발, 검증, 운영 등 여러 환경에 쉽게 적용할 수 있다.    
+
 ### 3-1. CloudFormation
+AWS에서 만든 IaC 서비스이다. AWS 아키텍처를 CloudFormation 파일로 만들고 git에서 관리해 쉽게 배포할 수 있다.   
 
 ### 3-2. Elastic Beanstalk
+정형화된 AWS 아키텍처를 CloudFormation으로 제공해 사용자가 쉽게 서비스를 배포할 수 있도록 돕는다.   
+애플리케이션 배포에 최적화 된 CloudFormation Wrapper 역할이다.   
+
+## 4. DB 성능을 높이는 구조
+CloudFormation을 사용해 AWS 인프라를 코드로 배포하고 CloudTrail과 CloudWatch를 서비스 운영과 모니터링에 사용한다.    
+한 동안 서비스가 문제 없이 동작 했지만 서비스가 성장하고 사용자의 요청이 늘어나 RDS의 리소스가 부족해 성능이 느려졌다.   
+CloudWatch에서 RDS의 CPU 사용률이 60%를 넘어갔다고 알림이 왔다.   
+<br/>
+RDS 서버의 성능을 좋은 것으로 바꿔 해결(Scale-up)할 수 있지만 한계가 있다.   
+RDS 서버가 요청을 버티지 못하고 다운이 되더라도 Multi-AZ가 Failover를 하고 장애를 최소화 하지만 결국 요청을 모두 처리하지 못해 다시 RDS가 다운될 수 있다.   
+이 경우 RDS서버를 늘려 요청을 분산(Scale-out)해 문제를 해결해야 한다. AWS는 Read Replica 기능으로 읽기 전용 RDS를 추가할 수 있다.   
+보통 애플리케이션은 RDS에 읽기 작업을 주로 요청한다. 쓰기는 Primary DB에 하고 읽기는 Read Replica에서 해 요청 처리량을 늘릴 수 있다.   
+RDS에서 Primary DB와 Read Replica의 데이터 동기화는 비동기식 복제를 사용한다.   
+
+### 4-1. Read Replica
+AWS는 하나의 Primary DB에서 최대 15개 까지 Read Replica를 생성할 수 있다. MySQL, PostgreSQL, MariaDB, Oracle, SQL Server에서만 지원된다.   
+같은 리전, 다른 리전, 다른 AWS 계정에 Read Replica를 생성할 수 있다.   
+Read Replica는 읽기만 가능하고 쓰기를 할 수 없다.   
+Read Replica도 독립적인 인스턴스 이므로 추가 비용이 발생한다.   
+그리고 Read Replica를 독립적인 다른 Primary DB로 승격시킬 수 있다. 장애 발생 시 Read Replica를 Primary DB로 승격해 빠르게 서비스를 복구할 수 있다.   
+
+<figure>
+  <img src="https://i.imgur.com/hX2RZWO.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">Read Replica 추가한 구조</p>
+</figure>
+
+### 4-2. ElasticCache
+Read Replica를 15개 추가 했지만 사용자의 요청이 늘어나 성능향상이 추가로 필요하다.   
+RDS 앞에 캐시인 ElasticCache를 추가해 RDS 서버의 부하를 줄일 수 있다.   
+ElasticCache는 AWS에서 제공하는 완전관리형 인메모리 캐싱 서비스이다. Redis, Memcached를 지원한다.   
+ElasticCache는 인메모리 DB처럼 동작하기 때문에, 애플리케이션에서 ElasticCache를 먼저 조회를 하고 없는 경우 RDS 서버에 요청하도록 코드를 수정해야 한다. 
+
+<figure>
+  <img src="https://i.imgur.com/XHd0NNS.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">ElasticCache 추가한 구조</p>
+</figure>
+
+## 5. 데이터베이스 분산 구조
+Read Replica를 추가하고 ElasticCache를 추가해도 수백만 수준의 요청을 받으면 RDS 서버가 다운되어 서비스에 전면 장애가 발생할 수 있다.   
+인스턴스 타입을 변경해 Scale-up 하고 Read Replica로 Scale-out 했지만 한계가 있다.   
+이 경우 샤딩을 도입해 문제를 해결할 수 있다.   
+MySQL, Maria DB, Oracle 같은 RDBMS는 직접 샤딩을 구현해 해결해야 하지만 AWS DynamoDB는 자동으로 샤딩을 설정해 준다.   
+DynamoDB는 무한한 성능에 관리가 필요없고 key/value 형태로 데이터를 저장하는 NoSQL DB이다.   
+
+### 5-1. DynamoDB
+DynamoDB는 대규모 데이터와 높은 처리량을 효율적으로 처리하기 위해 데이터를 여러 파티션으로 나눠 분산 저장하고 관리한다.   
+파티션은 DynamoDB 내부의 논리적인 단위로서 DynamoDB 내부 단위로 데이터와 처리량을 분산하는 역할을 한다.   
+각 파티션은 독립적으로 동작하고, 최대 10GB의 데이터와 초당 1,000개의 쓰기 또는 3,000개의 읽기를 처리할 수 있다.   
+DynamoDB는 사용자가 명시적으로 샤딩을 구성하지 않아도 자동으로 파티션을 관리한다.   
+데이터와 트래픽이 증가하면 DynamoDB가 자동으로 파티션을 분할하고 데이터와 처리량을 새 파티션들에 분배한다. 애플리케이션은 별도의 수정 없이 자동으로 분산된 데이터에 접근할 수 있다.   
+분할된 파티션은 여러 노드에 걸쳐 생성되고 삭제될 수 있고 DynamoDB 내부에서 관리하기 때문에 사용자는 파티션의 위치를 알 필요 없이 DynamoDB 엔드포인트에 연결해 요청만 하면 된다.    
+DynamoDB의 샤딩은 파티션 키를 기반으로 동작한다. 같은 파티션 키 값은 같은 파티션에 저장되기 때문에 파티션 키를 적절히 설정해야 한다.   
+그리고 모든 파티션은 최소 3개의 AZ에 동기식 복제되므로 항상 Multi-AZ로 동작한다.   
+<br/>
+DynamoDB는 기존 RDS와 다르게 key/value 형식이므로 독립적인 테이블 먼저 DynamoDB로 옮긴다.   
+
+<figure>
+  <img src="https://i.imgur.com/4jyfnVV.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">DynamoDB 추가한 구조</p>
+</figure>
+
+### 5-2. DynamoDB Accelerator(DAX)
+DAX는 DynamoDB 앞에 배치되는 인메모리 캐시 서비스로서 읽기 성능을 향상시킨다.   
+DAX는 DynamoDB에만 사용할 수 있고 DynamoDb와 자동 통합되어 쓰기 시 자동으로 캐시를 무효화 할 수 있다.   
+DynamoDB 클라이언트를 DAX로 대체하면 자동으로 캐싱이 된다.    
+따라서 ElasticCache 처럼 애플리케이션에서 캐시 hit 유무를 판단하는 조건문이 필요 없고 애플리케이션에서 연결하는 엔드포인트를 DynamoDB에서 DAX로 변경하면 된다.   
+
+<figure>
+  <img src="https://i.imgur.com/N5PFf8W.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">DAX 추가한 구조</p>
+</figure>
+
