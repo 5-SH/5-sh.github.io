@@ -115,3 +115,127 @@ DynamoDB 클라이언트를 DAX로 대체하면 자동으로 캐싱이 된다.
   <p style="font-style: italic; color: gray;">DAX 추가한 구조</p>
 </figure>
 
+## 6. 암호화, 컨플라이언스, 패치
+### 6-1. Key Management Service(KMS)
+데이터베이스에 있는 개인 정보가 유출될 경우 소송 등 큰 사고가 발생할 수 있다.  
+스토리지에 있는 데이터들을 암호화해야 하고 암호화를 위해 키가 필요하다.   
+AWS는 암호화 키를 관리하는 KMS를 제공한다.    
+KMS는 암호화 키인 Customer Managed Key(CMK)를 생성, 저장하고 키는 HSM 기반 하드웨어 안에서 보호된다.    
+HSM은 암호화 키를 저장, 연상하는 전용 보안 정비이다. 사용자는 HSM에 직접 접근할 수 없고 API를 통해서만 접근할 수 있다. 키는 AWS 밖으로 나갈 수 없다.   
+<br/>
+4KB 이하의 짧은 데이터는 KMS에서 직접 암호화, 복호화 할 수 있지만 성능과 네트워크 통신 비용이 커 실무에서는 대부분 직접하지 않는다.   
+대부분의 경우 Envelop Encryption을 사용한다. Envelop Encryption은 아래 단계로 동작한다.   
+
+1. 앱 → KMS: GenerateDataKey 요청
+    - DataKey는 AES 같은 대칭키 이고 실제 데이터를 암호화, 복호화 하는데 사용한다.   
+    - 256bit 크기의 키이고 한 번 사용하고 버린다.   
+2. KMS(HSM) → 앱: 평문 DataKey, 암호화된 DataKey를 전달한다.
+    - 암호화 할 때,
+      - 평문 DataKey는 암호화되지 않은 키이고 네트워크를 통해 전달 받을 때 TLS로 보호된다.
+      - 암호화를 할 때 앱의 메모리에 잠깐 존재하고 사용 후 즉시 파기한다.
+    - 복호화 할 때,
+      - 암호화된 DataKey는 평문 DataKey를 KMS Master Key(CMK)로 암호화 한 것이다.
+      - 평문이 아니라서 탈취돼도 안전하고 데이터 복호화를 위해 앱에서 저장한다.   
+      - 데이터를 복호화 하기 위해 암호화된 DataKey를 KMS로 전달해 평문 DataKey를 받고 복호화에 사용한 뒤 즉시 파기한다.
+    - 평문 DataKey를 직접 전달하는 이유는 파일 등으로 저장하지 않고 앱의 메모리 내에서만 존재한다면 안전하다고 간주하기 때문이다. 
+    - 즉, "애플리케이션의 런타임은 신뢰 영역이다." 라고 간주한다.
+
+### 6-2. AWS Config
+AWS 앱에서 데이터의 암호화, 복호화를 강제하도록 하기 위해 AWS Config를 사용할 수 있다.   
+AWS Config는 AWS 내 리소스들의 Complicance를 만들고 지켜지지 않으면 경고 알림을 보내거나 막도록 하는 기능을 제공한다.   
+AWS Config는 Config Rule을 사용해 컴플라이언스를 지키는 지 검사한다.   
+KMS를 사용한 암호화 유무를 검사하기 위해 S3는 s3-bucket-server-side-encryption-enabled, EBS는 encrypted-volumes, RDS는 rds-storage-encrypted 등의 Config Rule를 사용한다.   
+
+### 6-3. AWS Systems Manager(SSM)
+OS, 데이터베이스 등의 보안 취약점이 발견되어 패치가 필요할 수 있다.   
+이 때 패치해야할 서버가 매우 많을 때 각 서버에 접근해 명령어를 실행하면 오랜 시간이 걸리고 실수가 발생할 수 있다.   
+AWS는 서버들을 전체 관리하기 위해 AWS Systems Manager를 제공한다.   
+특정 시간에 업데이트를 계획하는 Maintenance, 패치를 자동화하는 Patch Manager 그리고 모든 서버에 간단한 명령어를 날릴 수 있게 하는 Run Command 라는 서비스가 있다.   
+<br/>
+SSM으로 취약한 PostgreSQL 버전을 탐지해서 업그레이드 하는 과정은 아래와 같다.   
+
+1. SSM에서 취약한 PostgreSQL 버전을 탐지
+    - AWS는 내부적으로 CVE 정보를 갖고 있다.
+    - Patch Manager + Amazon Inspector로 취약점을 탐지한다.
+    - Inspector가 EC2를 스캔해 버전 정보를 확인하면 CVE 정보와 비교해 탐지한다.
+2. 업그레이드 전략 수립
+    - SSM Automation + Maintenance Window
+    - Maintenance Window는 언제 패치 작업을 수행할지 계획한다.
+    - 실제 업그레이드는 SSM Automation Document(Runbook)가 실행한다. 단계별로 성공/실패를 기록하고 실패 시 자동 중단, 알림, 이전 스냅샷으로 복구 등을 지원한다.
+    - SSM Automation Document(Runbook)은 AWS 리소스에 대해 미리 정의된 운영 절차를 코드로 실행하는 문서이다.
+    ```
+    schemaVersion: '0.3'
+    description: >
+      PostgreSQL security patch upgrade runbook.
+      Stops PostgreSQL, takes EBS snapshot, upgrades package,
+      restarts service, and verifies version.
+
+    parameters:
+      InstanceId:
+        type: String
+        description: PostgreSQL가 설치된 EC2 인스턴스 ID
+
+      DataVolumeId:
+        type: String
+        description: PostgreSQL 데이터가 있는 EBS 볼륨 ID
+
+    mainSteps:
+
+      # 1️⃣ PostgreSQL 서비스 중지
+      # 데이터 파일 일관성을 보장하기 위해 먼저 DB를 정지
+      - name: StopPostgreSQL
+        action: aws:runCommand
+        inputs:
+          DocumentName: AWS-RunShellScript
+          InstanceIds:
+            - "{{ InstanceId }}"
+          Parameters:
+            commands:
+              - systemctl stop postgresql
+
+      # 2️⃣ 데이터 볼륨 스냅샷 생성
+      # 업그레이드 실패 시 복구를 위한 롤백 포인트
+      - name: SnapshotDataVolume
+        action: aws:createSnapshot
+        inputs:
+          VolumeId: "{{ DataVolumeId }}"
+          Description: "Pre-PostgreSQL-upgrade snapshot"
+
+      # 3️⃣ PostgreSQL 패키지 업그레이드
+      # OS 패키지 매니저를 통해 보안 패치 적용
+      - name: UpgradePostgreSQL
+        action: aws:runCommand
+        inputs:
+          DocumentName: AWS-RunShellScript
+          InstanceIds:
+            - "{{ InstanceId }}"
+          Parameters:
+            commands:
+              - yum update -y postgresql
+
+      # 4️⃣ PostgreSQL 서비스 재시작
+      # 업그레이드된 바이너리로 DB 기동
+      - name: StartPostgreSQL
+        action: aws:runCommand
+        inputs:
+          DocumentName: AWS-RunShellScript
+          InstanceIds:
+            - "{{ InstanceId }}"
+          Parameters:
+            commands:
+              - systemctl start postgresql
+
+      # 5️⃣ PostgreSQL 버전 확인
+      # 실제로 보안 패치가 적용되었는지 검증
+      - name: VerifyPostgreSQLVersion
+        action: aws:runCommand
+        inputs:
+          DocumentName: AWS-RunShellScript
+          InstanceIds:
+            - "{{ InstanceId }}"
+          Parameters:
+            commands:
+              - psql --version
+
+    ```
+    - 완료 후 SSM Compliance 상태를 업데이트 한다.
