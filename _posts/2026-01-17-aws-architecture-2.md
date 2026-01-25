@@ -162,7 +162,8 @@ SSM으로 취약한 PostgreSQL 버전을 탐지해서 업그레이드 하는 과
     - SSM Automation + Maintenance Window
     - Maintenance Window는 언제 패치 작업을 수행할지 계획한다.
     - 실제 업그레이드는 SSM Automation Document(Runbook)가 실행한다. 단계별로 성공/실패를 기록하고 실패 시 자동 중단, 알림, 이전 스냅샷으로 복구 등을 지원한다.
-    - SSM Automation Document(Runbook)은 AWS 리소스에 대해 미리 정의된 운영 절차를 코드로 실행하는 문서이다.
+    - SSM Automation Document(Runbook)은 AWS 리소스에 대해 미리 정의된 운영 절차를 코드로 실행하는 문서이다.   
+    
     ```
     schemaVersion: '0.3'
     description: >
