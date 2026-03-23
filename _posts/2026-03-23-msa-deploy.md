@@ -168,3 +168,275 @@ https://raw.githubusercontent.com/sysnet4admin/IaC/master/manifests/172.16_net_c
 kubeadm join --token 123456.1234567890123456 \
              --discovery-token-unsafe-skip-ca-verification 192.168.1.10:6443
 ```
+
+## Repositories
+1. 구성
+w1-k8s: kafka
+w2-k8s: MySql master
+w3-k8s: MySql slave + Redis
+
+2. MySql
+2-1. namespace: deploy-test-data
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: deploy-test-data
+```
+
+2-2. PV / PVC
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-master-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/mysql-master
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - w2-k8s
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-slave-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/mysql-slave
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - w3-k8s
+```
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-master-pvc
+  namespace: deploy-test-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: mysql-master-pv
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-slave-pvc
+  namespace: deploy-test-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: mysql-slave-pv
+```
+
+2-2. Headless Service
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: deploy-test-data
+spec:
+  clusterIP: None
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+```
+
+2-3. ConfigMap
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+  namespace: deploy-test-data
+data:
+  master.cnf: |
+    [mysqld]
+    server-id=1
+    log-bin=mysql-bin
+    binlog_format=ROW
+
+    gtid_mode=ON
+    enforce_gtid_consistency=ON
+    log_slave_updates=ON
+
+  slave.cnf: |
+    [mysqld]
+    server-id=2
+    relay-log=mysql-relay-bin
+
+    gtid_mode=ON
+    enforce_gtid_consistency=ON
+    log_slave_updates=ON
+```
+
+2-4. StatefulSet
+master
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-master
+  namespace: deploy-test-data
+spec:
+  serviceName: mysql
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: mysql-master
+
+  template:
+    metadata:
+      labels:
+        app: mysql-master
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: w2-k8s
+
+      containers:
+      - name: mysql
+        image: mysql:8.0
+
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+
+        volumeMounts:
+        - name: config
+          mountPath: /etc/mysql/conf.d
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: mysql-master-pvc
+```
+
+slave
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-slave
+  namespace: deploy-test-data
+spec:
+  serviceName: mysql
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: mysql-slave
+
+  template:
+    metadata:
+      labels:
+        app: mysql-slave
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: w3-k8s
+
+      containers:
+      - name: mysql
+        image: mysql:8.0
+
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpass
+
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+        
+        volumeMounts:
+        - name: config
+          mountPath: /etc/mysql/conf.d
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: mysql-slave-pvc
+```
+
+2-5. 복제 설정
+
+```bash
+kubectl exec -it mysql-slave-0 -n deploy-test-data -- mysql -uroot -prootpass
+```
+
+```sql
+CHANGE MASTER TO
+  MASTER_HOST='mysql-master-0.mysql',
+  MASTER_USER='root',
+  MASTER_PASSWORD='rootpass',
+  MASTER_AUTO_POSITION=1;
+
+START SLAVE;
+```
+
+## MSA 환경
+1. 네임스페이스: deploy-test
+kubectl create namespace deploy-test
+
+2. deployment
+
+3. service
+
+4. ingress
+
+## devOps 환경
+1. jenkins
+
+2. hobor
+
+3. argocd
+
+## 모니터링
+1. grafana
+
+2. lgtm
+
+3. slack
