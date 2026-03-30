@@ -257,27 +257,43 @@ spec:
 ```
 
 2-2. Headless Service
-
+master
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql
+  name: mysql-master
   namespace: deploy-test-data
 spec:
   clusterIP: None
   selector:
-    app: mysql
+    app: mysql-master
   ports:
     - port: 3306
 ```
 
+slave
+```yaml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: mysql-slave
+    namespace: deploy-test-data
+  spec:
+    clusterIP: None
+    selector:
+      app: mysql-slave
+    ports:
+      - port: 3306
+```
+
 2-3. ConfigMap
+master
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mysql-config
+  name: mysql-master-config
   namespace: deploy-test-data
 data:
   master.cnf: |
@@ -289,7 +305,16 @@ data:
     gtid_mode=ON
     enforce_gtid_consistency=ON
     log_slave_updates=ON
+```
 
+slave
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-slave-config
+  namespace: deploy-test-data
+data:
   slave.cnf: |
     [mysqld]
     server-id=2
@@ -309,7 +334,7 @@ metadata:
   name: mysql-master
   namespace: deploy-test-data
 spec:
-  serviceName: mysql
+  serviceName: mysql-master
   replicas: 1
 
   selector:
@@ -335,8 +360,6 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /var/lib/mysql
-
-        volumeMounts:
         - name: config
           mountPath: /etc/mysql/conf.d
 
@@ -349,6 +372,9 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: mysql-master-pvc
+      - name: config
+        configMap:
+          name: mysql-master-config
 ```
 
 slave
@@ -359,7 +385,7 @@ metadata:
   name: mysql-slave
   namespace: deploy-test-data
 spec:
-  serviceName: mysql
+  serviceName: mysql-slave
   replicas: 1
 
   selector:
@@ -385,8 +411,6 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /var/lib/mysql
-        
-        volumeMounts:
         - name: config
           mountPath: /etc/mysql/conf.d
 
@@ -399,23 +423,67 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: mysql-slave-pvc
+      - name: config
+        configMap:
+          name: mysql-slave-config
 ```
 
-2-5. 복제 설정
-
+2-5. MySql 접근 설정
+m-k8s에서 아래와 같이 포트포워딩을 실행 root로 접속
 ```bash
-kubectl exec -it mysql-slave-0 -n deploy-test-data -- mysql -uroot -prootpass
+kubectl port-forward -n deploy-test-data pod/mysql-master-0 13306:3306
+kubectl port-forward -n deploy-test-data pod/mysql-slave-0 23306:3306
 ```
+
+그 다음 로컬 PC의 터미널에서 아래 실행하고 workbench에서 Host: 127.0.0.1, Port: 13306(또는 23306), User: root
+```bash
+ssh -p 60010 -L 13306:127.0.0.1:13306 root@127.0.0.1  // master
+ssh -p 60010 -L 23306:127.0.0.1:23306 root@127.0.0.1  // slave
+```
+
+2-6. Replication 설정
+replication 전용 사용자를 만든다. mysql-master에 접속해 아래 명령어를 실행한다.
+
+```sql
+CREATE USER 'repl'@'%' IDENTIFIED WITH mysql_native_password BY 'replpass';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+FLUSH PRIVILEGES;
+```
+
+Slave가 Master의 데이터를 복제하도록 설정하는 명령어
+GTID 기반 복제를 사용한다. GTID는 각 트랜잭션에 고유 ID를 부여해 Slave는 Master에서 어디까지 복제했는지 기억하고 이어서 복제한다.
 
 ```sql
 CHANGE MASTER TO
-  MASTER_HOST='mysql-master-0.mysql',
-  MASTER_USER='root',
-  MASTER_PASSWORD='rootpass',
-  MASTER_AUTO_POSITION=1;
+  MASTER_HOST='mysql-master-0.mysql-master',
+  MASTER_USER='repl',
+  MASTER_PASSWORD='replpass',
+  MASTER_AUTO_POSITION=1;               // GTID 기반 복제 사용
 
-START SLAVE;
+START SLAVE;                            // 실제로 복제를 시작하는 명령
 ```
+
+위 명령어가 ```CHANGE REPLICATION SOURCE TO SOURCE_AUTO_POSITION = 1 cannot be executed because @@GLOBAL.GTID_MODE = OFF.``` 에러로 실패하면 MySQL에 GTID가 꺼져 있어서 실패한 상황이다.
+아래 Slave MySQL에서 명령어로 GTID를 동적으로 켜준다. MySQL 서버가 재기동 되면 설정이 유지되지 않을 수 있다.
+
+```sql
+SET GLOBAL enforce_gtid_consistency = ON;
+SET GLOBAL gtid_mode = OFF_PERMISSIVE;
+SET GLOBAL gtid_mode = ON_PERMISSIVE;
+SET GLOBAL gtid_mode = ON;
+```
+
+Master, Slave 동작은 아래 쿼리를 실행하고 Slave_IO_Running, Slave_SQL_Running이 YES인지 확인한다.
+
+```sql
+SHOW SLAVE STATUS;
+```
+
+실행결과
+<figure>
+  <img src="https://i.imgur.com/oUEgSQI.jpeg" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">SHOW SLAVE STATUS 결과</p>
+</figure>
 
 ## MSA 환경
 1. 네임스페이스: deploy-test
