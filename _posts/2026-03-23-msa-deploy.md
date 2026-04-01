@@ -429,17 +429,19 @@ spec:
 ```
 
 2-5. MySql 접근 설정
-m-k8s에서 아래와 같이 포트포워딩을 실행 root로 접속
+로컬 PC의 터미널에서 아래 실행
+```bash
+ssh -p 60010 -L 13306:127.0.0.1:13306 root@127.0.0.1  // master
+ssh -p 60010 -L 23306:127.0.0.1:23306 root@127.0.0.1  // slave
+```
+
+그 다음 m-k8s에서 아래와 같이 포트포워딩을 실행 root로 접속하고 workbench에서 Host: 127.0.0.1, Port: 13306(또는 23306), User: root으로 접속
 ```bash
 kubectl port-forward -n deploy-test-data pod/mysql-master-0 13306:3306
 kubectl port-forward -n deploy-test-data pod/mysql-slave-0 23306:3306
 ```
 
-그 다음 로컬 PC의 터미널에서 아래 실행하고 workbench에서 Host: 127.0.0.1, Port: 13306(또는 23306), User: root
-```bash
-ssh -p 60010 -L 13306:127.0.0.1:13306 root@127.0.0.1  // master
-ssh -p 60010 -L 23306:127.0.0.1:23306 root@127.0.0.1  // slave
-```
+※ ssh 접속과 포트포워딩 순서를 반대로 하면 m-k8s 노드로 ssh 접속이 안될 수 있음
 
 2-6. Replication 설정
 replication 전용 사용자를 만든다. mysql-master에 접속해 아래 명령어를 실행한다.
@@ -484,6 +486,159 @@ SHOW SLAVE STATUS;
   <img src="https://i.imgur.com/oUEgSQI.jpeg" width="100%" alt=""/>
   <p style="font-style: italic; color: gray;">SHOW SLAVE STATUS 결과</p>
 </figure>
+
+3. Kafka
+```yaml
+// Zookeeper Deployment + Service
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: deploy-test-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: w1-k8s
+      containers:
+      - name: zookeeper
+        image: wurstmeister/zookeeper
+        ports:
+        - containerPort: 2181
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+  namespace: deploy-test-data
+spec:
+  type: ClusterIP
+  ports:
+  - port: 2181
+    targetPort: 2181
+  selector:
+    app: zookeeper
+```
+
+```yaml
+// Kafka Deployment + Service
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: deploy-test-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: w1-k8s
+      containers:
+      - name: kafka
+        image: wurstmeister/kafka
+        ports:
+        - containerPort: 9092
+        - containerPort: 9093
+        env:
+        - name: KAFKA_BROKER_ID
+          value: "1"
+        - name: KAFKA_ZOOKEEPER_CONNECT
+          value: "zookeeper-service:2181"
+        - name: KAFKA_ADVERTISED_LISTENERS
+          value: "INSIDE://kafka-service.deploy-test-data.svc.cluster.local:9093,OUTSIDE://kafka-service.deploy-test-data.svc.cluster.local:9092"
+        - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+        - name: KAFKA_LISTENERS
+          value: "INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092"
+        - name: KAFKA_INTER_BROKER_LISTENER_NAME
+          value: "INSIDE"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: deploy-test-data
+spec:
+  type: ClusterIP
+  ports:
+  - name: outside
+    port: 9092
+    targetPort: 9092
+  - name: inside
+    port: 9093
+    targetPort: 9093
+  selector:
+    app: kafka
+```
+
+4. Redis
+
+```yaml
+iapiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: deploy-test-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: w3-k8s
+      containers:
+      - name: redis
+        image: redis:7
+        ports:
+        - containerPort: 6379
+
+        args:
+        - "--appendonly"
+        - "yes"
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: deploy-test-data
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+```
 
 ## MSA 환경
 1. 네임스페이스: deploy-test
