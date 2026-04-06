@@ -487,6 +487,11 @@ SHOW SLAVE STATUS;
   <p style="font-style: italic; color: gray;">SHOW SLAVE STATUS 결과</p>
 </figure>
 
+주문 서비스를 위한 database를 생성한다.
+```sql
+create database ordermsa;
+```
+
 3. Kafka
 ```yaml
 // Zookeeper Deployment + Service
@@ -642,13 +647,229 @@ spec:
 
 ## MSA 환경
 1. 네임스페이스: deploy-test
+```
 kubectl create namespace deploy-test
+```
 
-2. deployment
+2. deployment/service
+2-1. 멤버 서비스
+- 로컬에서 이미지를 빌드한 이미지를 k8s에 직접 실행. CI/CD 환경은 추후 구성 예정
+```bash
+# docker desktop 실행 후 로컬에서 이미지 빌드
+docker build -t member-service:latest .
 
-3. service
+# tar 파일로 저장
+docker save -o member-service.tar member-service:latest
 
-4. ingress
+# w1-k8s, w2-k8s, w3-k8s로 전송
+scp -P 60101 member-service.tar root@127.0.0.1:/root/
+scp -P 60102 member-service.tar root@127.0.0.1:/root/
+scp -P 60103 member-service.tar root@127.0.0.1:/root/
+
+# w1-k8s, w2-k8s, w3-k8s 각 노드에서 아래 명령어를 실행해 Docker에 이미지 등록
+docker load -i member-service.tar
+```
+
+- deployment, service 배포
+```bash
+# m-k8s에서 다음 명령어로 아래 depl_svc.yaml을 실행
+kubectl apply -f member.yaml
+
+# 확인
+kubectl get pod -n deploy-test -o wide
+kubectl get svc -n deploy-test
+```
+
+```yaml
+# depl_svc.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: member-depl
+  namespace: deploy-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: member
+  template:
+    metadata:
+      labels:
+        app: member
+    spec:
+      containers:
+      - name: member-container
+        image: member-service:latest
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 8080
+
+        resources:
+          limits:
+            cpu: "1"
+            memory: "500Mi"
+          requests:
+            cpu: "0.5"
+            memory: "250Mi"
+
+        env:
+        - name: DB_HOST
+          value: "mysql-master-0.mysql-master.deploy-test-data.svc.cluster.local"
+        - name: DB_PW
+          value: "rootpass"
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: member-service
+  namespace: deploy-test
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: member
+```
+
+3. 외부 연결
+EKS에서는 LB가 자동으로 붙지만, 온프레미스 + VirtualBox + LB 없는 환경에서는 MetalLB + Ingress 조합을 사용해 외부의 요청을 처리할 수 있다. 
+
+3-1. 전체 구조
+```
+외부 요청
+   ↓
+[ MetalLB (외부 IP 할당) ]
+   ↓
+[ Ingress Controller (Nginx) ]
+   ↓
+[ member-service (ClusterIP) ]
+   ↓
+[ member Pod ]
+```
+
+3-2. 전체 진행 순서
+1️⃣ MetalLB 설치
+2️⃣ IP Pool 설정
+3️⃣ Ingress Controller 설치
+4️⃣ Ingress 리소스 생성
+5️⃣ hosts 설정
+6️⃣ 접속 테스트
+
+3-3. MetalLB 설치
+
+```bash
+# ✔️ v0.11.x 사용
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.11.0/manifests/namespace.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.11.0/manifests/metallb.yaml
+
+# 설치 후 확인
+kubectl get pods -n metallb-system
+```
+
+v0.11은 ConfigMap 방식으로 설정해야함. 아래 config를 적용한다
+
+```bash
+kubectl apply -f metallb-config.yaml
+```
+
+```yaml
+# metalLB-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - 192.168.56.200-192.168.56.210
+```
+
+3-4. Ingress Controller 설치(Nginx)
+```bash
+# 구버전 ingress-nginx (k8s 1.17~1.18 호환)
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml
+
+# 설치 확인
+kubectl get svc -n ingress-nginx
+kubectl get pods -n ingress-nginx
+```
+
+3-5. Ingress 리소스 생성
+
+```bash
+kubectl apply -f ingress.yaml
+```
+
+```yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: order-backend-ingress
+  namespace: deploy-test
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  rules:
+  - host: server.deploy-test.shop
+    http:
+      paths:
+      - path: /member-service(/|$)(.*)
+        backend:
+          serviceName: member-service
+          servicePort: 80
+
+      - path: /ordering-service(/|$)(.*)
+        backend:
+          serviceName: ordering-service
+          servicePort: 80
+
+      - path: /product-service(/|$)(.*)
+        backend:
+          serviceName: product-service
+          servicePort: 80
+```
+
+```bash
+# 적용 후 확인
+kubectl get ingress -n deploy-test
+kubectl get svc -n ingress-nginx
+```
+
+3-6. 도메인 설정
+로컬 PC에 host 설정
+이 설정으로 ```server.deploy-test.shop```으로 들어온 요청은 실제 DNS에 등록이 안되어 있어 host 파일을 통해 ingress-nginx-controller의 EXTERNAL-IP인 192.168.x.x IP로 강제로 알려줌
+```
+C:\Windows\System32\drivers\etc\hosts 에서
+192.168.x.x   
+ 추가
+192.168.x.x의 주소는 kubectl get svc -n ingress-nginx 실행 결과 LoadBalancer 타임의 EXTERNAL-IP를 참고
+```
+
+3-7. 연결 확인
+postman으로 아래와 같이 ```POST http://server.deploy-test.shop/member-service/member/doLogin``` 요청 시 응답 확인
+
+
+<figure>
+  <img src="https://i.imgur.com/jkXHovD.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">member-service API 요청 결과</p>
+</figure>
 
 ## devOps 환경
 1. jenkins
@@ -663,3 +884,16 @@ kubectl create namespace deploy-test
 2. lgtm
 
 3. slack
+
+## 그 외
+1. 시크릿 설정
+
+2. HTTPS 통신
+
+3. DB 이중화 연결
+
+4. 서비스용 DB 계정 생성
+
+5. 젠킨스, harbor 구성
+
+6. HPA
