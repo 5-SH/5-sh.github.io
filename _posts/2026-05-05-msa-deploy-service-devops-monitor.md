@@ -47,6 +47,9 @@ virtualbox에 vagrant로 프로비저닝한 환경에 harbor와 jenkins를 구�
 - kubectl apply
 
 ## 5-2. harbor
+
+### 5-2-1. 설치
+
 harbor는 nginx(gateway), harbor-core(API), harbor-db(postgres), redis, registry로 구성된 마이크로 서비스 구조   
 여러 컨테이너를 묶어서 실행하기 위해 docker compose로 설치   
 
@@ -137,11 +140,132 @@ f048b958637b   goharbor/harbor-db:v2.15.0            "/docker-entrypoint.…"   
 1c504cd1c846   goharbor/harbor-log:v2.15.0           "/bin/sh -c /usr/loc…"   15 seconds ago   Up 14 seconds (health: starting)   127.0.0.1:1514->10514/tcp   harbor-log
 ```
 
-로컬PC에서 harbor 접속 확인
+로컬PC에서 harbor 접속 확인   
 
 <figure>
   <img src="https://i.imgur.com/BluwlkW.png" width="100%" alt=""/>
   <p style="font-style: italic; color: gray;">harbor 접속</p>
+</figure>
+
+Harbor 설치 환경   
+
+- Windows + WSL2(Ubuntu)
+- Docker Desktop
+- Harbor v2.15.0
+- Kubernetes v1.18.4
+- Docker runtime 18.09.9
+
+### 5-2-2. Member 서비스 이미지 push
+
+MSA 환경에서 Docker 이미지를 중앙 저장소로 관리하기 위해 Harbor를 구축하고,    
+Vagrant 기반 Kubernetes Cluster에서 Harbor 이미지를 Pull 하도록 구성했다.   
+
+구성 환경은 아래와 같다.
+
+```text
+[ Windows PC ]
+ └─ Docker Desktop
+     └─ Harbor (192.168.56.1:8080)
+
+[ Vagrant Kubernetes Cluster ]
+ ├─ m-k8s
+ ├─ w1-k8s
+ ├─ w2-k8s
+ └─ w3-k8s
+```
+
+1. Harbor API 확인   
+
+```bash
+curl http://192.168.56.1:8080/api/v2.0/ping
+# 정상 응답:
+Pong
+```
+
+2. Harbor UI에 접속해 프로젝트 생성
+
+<figure>
+  <img src="https://i.imgur.com/hCUlWBd.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">프로젝트 생성</p>
+</figure>
+
+3. Docker insecure registry 설정
+
+Harbor를 HTTP로 구성했기 때문에 Docker에서 insecure registry 설정이 필요하다.
+적용 후 Docker Desktop을 재시작 해야한다.   
+
+<figure>
+  <img src="https://i.imgur.com/oml8Gw1.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">http 설정</p>
+</figure>
+
+<figure>
+  <img src="https://i.imgur.com/lqIVBI8.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">docker 설정</p>
+</figure>
+
+4. Docker 이미지 Push
+- 로컬에서 member-service 이미지 확인
+<figure>
+  <img src="https://i.imgur.com/f57Je8R.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">docker 이미지</p>
+</figure>
+
+- Harbor 용 태그 생성
+
+```bash
+PS C:\WINDOWS\system32> docker tag member-service:latest 192.168.56.1:8080/deploy-test-member/member-service:latest
+PS C:\WINDOWS\system32> docker images
+REPOSITORY                                            TAG       IMAGE ID       CREATED         SIZE
+product-service                                       latest    0004eb27476e   3 weeks ago     433MB
+ordering-service                                      latest    46f21531d0c3   3 weeks ago     434MB
+192.168.56.1:8080/deploy-test-member/member-service   latest    fcaee27bcf5f   4 weeks ago     421MB
+member-service                                        latest    fcaee27bcf5f   4 weeks ago     421MB
+goharbor/redis-photon                                 v2.15.0   4ed296911e8b   7 weeks ago     173MB
+goharbor/harbor-registryctl                           v2.15.0   4b2b3294a46c   7 weeks ago     166MB
+goharbor/registry-photon                              v2.15.0   5b02673a2fa2   7 weeks ago     87.7MB
+goharbor/harbor-log                                   v2.15.0   9e71d0bc1e73   7 weeks ago     170MB
+goharbor/harbor-jobservice                            v2.15.0   2fe35692621f   7 weeks ago     185MB
+goharbor/harbor-core                                  v2.15.0   87a862e24da8   7 weeks ago     210MB
+goharbor/harbor-portal                                v2.15.0   b3939ccdd07f   7 weeks ago     166MB
+goharbor/harbor-db                                    v2.15.0   e66097841983   7 weeks ago     274MB
+goharbor/prepare                                      v2.15.0   029f75920a4b   7 weeks ago     199MB
+goharbor/nginx-photon                                 v2.15.0   77728976f2e8   7 weeks ago     158MB
+redis                                                 7.4       65750d044ac8   16 months ago   117MB
+apache/kafka                                          3.8.0     b610bd8a193a   21 months ago   382MB
+mysql                                                 8.0.38    6c54cbcf775a   22 months ago   572MB
+```
+
+- Harbor push
+
+```bash
+PS C:\WINDOWS\system32> docker login 192.168.56.1:8080
+Username: admin
+
+i Info → A Personal Access Token (PAT) can be used instead.
+          To create a PAT, visit https://app.docker.com/settings
+
+
+Password:
+
+Login Succeeded
+PS C:\WINDOWS\system32> docker push 192.168.56.1:8080/deploy-test-member/member-service:latest
+The push refers to repository [192.168.56.1:8080/deploy-test-member/member-service]
+d06ca5ee8d0b: Layer already exists
+d24210e52761: Layer already exists
+f7409d4c66cc: Layer already exists
+08e98c779fb9: Layer already exists
+0a828e8088fe: Layer already exists
+344ae0b6479e: Layer already exists
+989e799e6349: Layer already exists
+latest: digest: sha256:cf421bb1ce160dc0b08b5f24118c47e3e565b05dc22facb1c57b1471276c7b48 size: 1786
+```
+
+- 이미지 push 확인
+
+<figure>
+  <img src="https://i.imgur.com/kZr5zw3.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">docker 이미지</p>
 </figure>
 
 
