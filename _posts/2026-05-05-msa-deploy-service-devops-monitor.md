@@ -155,7 +155,7 @@ Harbor 설치 환경
 - Kubernetes v1.18.4
 - Docker runtime 18.09.9
 
-### 5-2-2. Member 서비스 이미지 push
+### 5-2-2. Member 서비스 이미지 Push/Pull
 
 MSA 환경에서 Docker 이미지를 중앙 저장소로 관리하기 위해 Harbor를 구축하고,    
 Vagrant 기반 Kubernetes Cluster에서 Harbor 이미지를 Pull 하도록 구성했다.   
@@ -268,6 +268,257 @@ latest: digest: sha256:cf421bb1ce160dc0b08b5f24118c47e3e565b05dc22facb1c57b14712
   <p style="font-style: italic; color: gray;">docker 이미지</p>
 </figure>
 
+5. Deployment에서 이미지 Pull
+
+member 서비스의 Deployment, Service를 Harbor에서 이미지를 pull 하도록 아래와 같이 수정
+```yaml
+# depl_svc.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: member-depl
+  namespace: deploy-test
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: member
+
+  template:
+    metadata:
+      labels:
+        app: member
+
+    spec:
+      imagePullSecrets:
+      - name: harbor-secret
+
+      containers:
+      - name: member-container
+        image: 192.168.56.1:8080/deploy-test-member/member-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "500Mi"
+          requests:
+            cpu: "100m"
+            memory: "250Mi"
+
+        env:
+        - name: DB_HOST
+          value: "mysql-master-0.mysql-master.deploy-test-data.svc.cluster.local"
+        - name: DB_PW
+          value: "rootpass"
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: member-service
+  namespace: deploy-test
+
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: member
+```
+
+```kubectl apply -f depl_svc.yaml```로 적용 후 pod 배포 확인
+
+<figure>
+  <img src="https://i.imgur.com/3LDPHn7.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">이미지 Pull</p>
+</figure>
+
+### 5-2-3. ordering, product 서비스 이미지 Push/Pull
+
+1. ordering 서비스
+
+```bash
+PS C:\WINDOWS\system32> docker login 192.168.56.1:8080
+Authenticating with existing credentials... [Username: admin]
+
+i Info → To login with a different account, run 'docker logout' followed by 'docker login'
+
+
+Login Succeeded
+PS C:\WINDOWS\system32> docker tag ordering-service:latest 192.168.56.1:8080/deploy-test-ordering/ordering-service:latest
+PS C:\WINDOWS\system32> docker push 192.168.56.1:8080/deploy-test-ordering/ordering-service:latest
+The push refers to repository [192.168.56.1:8080/deploy-test-ordering/ordering-service]
+7fa3ab0f89c0: Pushed
+d24210e52761: Mounted from deploy-test-member/member-service
+f7409d4c66cc: Mounted from deploy-test-member/member-service
+08e98c779fb9: Mounted from deploy-test-member/member-service
+0a828e8088fe: Mounted from deploy-test-member/member-service
+344ae0b6479e: Mounted from deploy-test-member/member-service
+989e799e6349: Mounted from deploy-test-member/member-service
+latest: digest: sha256:7ce6d68cb67b39f8767632e569074d4161ddfcdb87b07eee59cbd4de1ba3366f size: 1786
+```
+
+```yaml
+# depl_svc.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordering-depl
+  namespace: deploy-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordering
+  template:
+    metadata:
+      labels:
+        app: ordering
+    spec:
+      imagePullSecrets:
+      - name: harbor-secret
+
+      containers:
+      - name: ordering-container
+        image: 192.168.56.1:8080/deploy-test-ordering/ordering-service:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8080
+        
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "500Mi"
+          requests:
+            cpu: "100m"
+            memory: "250Mi"
+        env:
+        - name: DB_HOST
+          value: "mysql-master-0.mysql-master.deploy-test-data.svc.cluster.local"
+        - name: DB_PW
+          value: "rootpass"
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ordering-service
+  namespace: deploy-test
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: ordering
+```
+
+2. product 서비스
+
+```bash
+PS C:\WINDOWS\system32> docker tag product-service:latest 192.168.56.1:8080/deploy-test-product/product-service:latest
+PS C:\WINDOWS\system32> docker push 192.168.56.1:8080/deploy-test-product/product-service:latest
+The push refers to repository [192.168.56.1:8080/deploy-test-product/product-service]
+b67528f7fc65: Pushed
+d24210e52761: Pushed
+f7409d4c66cc: Pushed
+08e98c779fb9: Pushed
+0a828e8088fe: Pushed
+344ae0b6479e: Pushed
+989e799e6349: Pushed
+latest: digest: sha256:9f8260d717ed01dd380bebe4d5e78b34ff0bb023c0aabb0a30c8754d8738cc60 size: 1786
+```
+
+```yaml
+# depl_svc.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-depl
+  namespace: deploy-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product
+  template:
+    metadata:
+      labels:
+        app: product
+    spec:
+      imagePullSecrets:
+      - name: harbor-secret
+
+      containers:
+      - name: product-container
+        image: 192.168.56.1:8080/deploy-test-product/product-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "500Mi"        
+          requests:
+            cpu: "100m"
+            memory: "250Mi"
+        env:
+        - name: DB_HOST
+          value: "mysql-master-0.mysql-master.deploy-test-data.svc.cluster.local"
+        - name: DB_PW
+          value: "rootpass"        
+        readinessProbe:
+          httpGet:            
+            path: /health
+            port: 8080          
+          initialDelaySeconds: 10          
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: deploy-test
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: product
+```
+
+```kubectl apply -f depl_svc.yaml```로 적용 후 pod 배포 확인
+
+<figure>
+  <img src="https://i.imgur.com/cta4dhW.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">이미지 Pull</p>
+</figure>
 
 ## 5-3. jenkins
 
