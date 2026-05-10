@@ -522,6 +522,232 @@ spec:
 
 ## 5-3. jenkins
 
+Harbor에 Jenkins를 추가해 CI/CD 환경을 구축한다.   
+
+```text
+Git Push
+ → Jenkins Build
+ → Docker Image Build
+ → Harbor Push
+ → Kubernetes Deployment
+```
+
+```mermaid
+flowchart LR
+
+A[Git Repository]
+ --> B[Jenkins]
+
+B --> C[Gradle Build]
+
+C --> D[Docker Build]
+
+D --> E[Harbor Push]
+
+E --> F[Kubernetes Pull]
+
+F --> G[Deployment]
+```
+
+구성 환경은 아래와 같다.   
+
+```text
+[ Windows PC ]
+ ├─ Docker Desktop
+ │   ├─ Harbor
+ │   └─ Jenkins
+ │
+ └─ WSL2 Ubuntu
+
+[ Vagrant Kubernetes Cluster ]
+ ├─ m-k8s
+ ├─ w1-k8s
+ ├─ w2-k8s
+ └─ w3-k8s
+```
+
+### 5-3-1. jenkins 설치
+
+1. jenkins docker 실행
+
+```bash
+PS C:\WINDOWS\system32> docker run -d --name jenkins -p 8081:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v //var/run/docker.sock:/var/run/docker.sock jenkins/jenkins:lts
+Unable to find image 'jenkins/jenkins:lts' locally
+lts: Pulling from jenkins/jenkins
+a7730063fcfe: Pull complete
+beb35d8d9493: Pull complete
+a576649e9376: Pull complete
+32ad68c1bba8: Pull complete
+6e001067f512: Pull complete
+f015f18f3c7a: Pull complete
+0454b3406328: Pull complete
+6e428cebe944: Pull complete
+1aac2fe67fcc: Pull complete
+b850d1c40542: Pull complete
+32ebd389acde: Pull complete
+e714309bcf67: Pull complete
+Digest: sha256:7004d07dbcdc5439fdad8853acdb029c5e3ab7a3d8190184fbf89bec66786c02
+Status: Downloaded newer image for jenkins/jenkins:lts
+aba5d2c3669bd8d6864452056d008a10e0e484ba8aae63adae4dc5cd7a0379cb
+PS C:\WINDOWS\system32> docker ps
+CONTAINER ID   IMAGE                                 COMMAND                   CREATED          STATUS                  PORTS                                              NAMES
+aba5d2c3669b   jenkins/jenkins:lts                   "/usr/bin/tini -- /u…"   33 seconds ago   Up 33 seconds           0.0.0.0:50000->50000/tcp, 0.0.0.0:8081->8080/tcp   jenkins
+69f2b3db8863   goharbor/nginx-photon:v2.15.0         "nginx -g 'daemon of…"   19 hours ago     Up 19 hours (healthy)   0.0.0.0:8080->8080/tcp                             nginx
+7f2521b15b61   goharbor/harbor-jobservice:v2.15.0    "/harbor/entrypoint.…"   19 hours ago     Up 19 hours (healthy)                                                      harbor-jobservice
+98fd6931f30e   goharbor/harbor-core:v2.15.0          "/harbor/entrypoint.…"   19 hours ago     Up 19 hours (healthy)                                                      harbor-core
+91f563ca1cdc   goharbor/harbor-registryctl:v2.15.0   "/home/harbor/start.…"   19 hours ago     Up 19 hours (healthy)                                                      registryctl
+52c2e44c992d   goharbor/harbor-portal:v2.15.0        "nginx -g 'daemon of…"   19 hours ago     Up 19 hours (healthy)                                                      harbor-portal
+cea0f2cba842   goharbor/harbor-db:v2.15.0            "/docker-entrypoint.…"   19 hours ago     Up 19 hours (healthy)                                                      harbor-db
+334279cfc2fa   goharbor/registry-photon:v2.15.0      "/home/harbor/entryp…"   19 hours ago     Up 19 hours (healthy)                                                      registry
+d42af998eddd   goharbor/redis-photon:v2.15.0         "redis-server /etc/r…"   19 hours ago     Up 19 hours (healthy)                                                      redis
+58db501b6900   goharbor/harbor-log:v2.15.0           "/bin/sh -c /usr/loc…"   19 hours ago     Up 19 hours (healthy)   127.0.0.1:1514->10514/tcp                          harbor-log
+```
+
+2. Jenkins 초기 비밀번호 확인, 브라우저 접속
+
+```bash
+PS C:\WINDOWS\system32> docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassworddocker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+cat: /var/jenkins_home/secrets/initialAdminPassworddocker: No such file or directory
+cat: exec: No such file or directory
+cat: jenkins: No such file or directory
+cat: cat: No such file or directory
+cf0980bdaca649828a67d6f4dcfabfbd
+```
+
+<figure>
+  <img src="https://i.imgur.com/Srgrgcx.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">Jenkins 접속</p>
+</figure>
+
+3. Jenkins 내부 Docker 설치
+
+Jenkins에서 Docker 사용이 가능한지 확인한다.   
+
+```bash
+gram@DESKTOP-TQV062L:~/harbor$ docker exec -it -u root jenkins bash
+root@aba5d2c3669b:/# docker version
+bash: docker: command not found
+```
+
+Jenkins container 안에 Docker CLI가 없어 기존 Jenkins를 삭제하고 jenkins + docker cli 커스텀 이미지를 만들어서 설치한다.   
+
+```bash
+PS C:\WINDOWS\system32> docker stop jenkins
+jenkins
+PS C:\WINDOWS\system32> docker rm jenkins
+jenkins
+```
+
+```bash
+gram@DESKTOP-TQV062L:~/harbor$ mkdir ~/jenkins-docker
+gram@DESKTOP-TQV062L:~/harbor$ cd ~/jenkins-docker/
+gram@DESKTOP-TQV062L:~/jenkins-docker$ vim Dockerfile
+gram@DESKTOP-TQV062L:~/jenkins-docker$ docker build -t my-jenkins .
+[+] Building 17.3s (6/6) FINISHED                                                                                                                       docker:default
+ => [internal] load build definition from Dockerfile                                                                                                              0.1s
+ => => transferring dockerfile: 139B                                                                                                                              0.0s
+ => [internal] load metadata for docker.io/jenkins/jenkins:lts                                                                                                    0.0s
+ => [internal] load .dockerignore                                                                                                                                 0.0s
+ => => transferring context: 2B                                                                                                                                   0.0s
+ => [1/2] FROM docker.io/jenkins/jenkins:lts                                                                                                                      0.2s
+ => [2/2] RUN apt-get update && apt-get install -y docker.io                                                                                                     16.2s
+ => exporting to image                                                                                                                                            0.7s
+ => => exporting layers                                                                                                                                           0.7s
+ => => writing image sha256:2982b24efd31963c44816a3726c565131471a6b57118c08838fccc8e6329d07a                                                                      0.0s
+ => => naming to docker.io/library/my-jenkins                                                                                                                     0.0s
+gram@DESKTOP-TQV062L:~/jenkins-docker$
+
+# Dockerfile
+FROM jenkins/jenkins:lts
+
+USER root
+
+RUN apt-get update && apt-get install -y docker.io
+
+USER jenkins
+```
+
+새 jenkins를 실행한다.
+
+```bash
+PS C:\WINDOWS\system32> docker run -d --name jenkins -p 8081:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v //var/run/docker.sock:/var/run/docker.sock my-jenkins
+0fadb941d9dc79bc4f43aebac1d0d0d681a4f83f215bc447346a38afd65a6cf0
+```
+
+Jenkins에서 Docker가 정상적으로 실행된 것을 확인한다.   
+
+```bash
+gram@DESKTOP-TQV062L:~/jenkins-docker$ docker exec -it -u root jenkins bash
+root@0fadb941d9dc:/# docker version
+Client:
+ Version:           26.1.5+dfsg1
+ API version:       1.45
+ Go version:        go1.24.4
+ Git commit:        a72d7cd
+ Built:             Sun Mar  8 15:28:39 2026
+ OS/Arch:           linux/amd64
+ Context:           default
+
+Server: Docker Desktop 4.40.0 (187762)
+ Engine:
+  Version:          28.0.4
+  API version:      1.48 (minimum version 1.24)
+  Go version:       go1.23.7
+  Git commit:       6430e49
+  Built:            Tue Mar 25 15:07:22 2025
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          1.7.26
+  GitCommit:        753481ec61c7c8955a23d6ff7bc8e4daed455734
+ runc:
+  Version:          1.2.5
+  GitCommit:        v1.2.5-0-g59923ef
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+```
+
+4. Harbor 테스트
+
+Jenkins Container 안에서 Harbor 접속 테스트를 한다.   
+
+```bash
+# docker exec -it -u root jenkins bash 로 Jenkins Container 접속
+
+root@0fadb941d9dc:/# docker login 192.168.56.1:8080
+Username: admin
+Password:
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+```
+
+5. Github SSH 연동
+
+Jenkins에서 Git Clone을 하기 위해 Github SSH Key를 생성하고 Github Public key에 등록한다.    
+그리고 Jenkins 브라우저에서 Github SSH Key로 Credential 설정을 한다.   
+
+```bash
+# Jenkins 전용 SSH Key 생성
+ssh-keygen -t ed25519 -C "jenkins"
+# 저장 위치
+~/.ssh/jenkins_key
+# 주의 사항: CI/CD 자동화를 위해 Passphrase 없이 생성함
+```
+
+6. Gihub Clone 테스트
+
+Freestype Project 생성 후 Git Clone 테스트를 수행한다.   
+Repository는 ```https://github.com/5-SH/deploy-test-member.git```로 설정함.   
+
+<figure>
+  <img src="https://i.imgur.com/NjQhvvU.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">Jenkins 접속</p>
+</figure>
+
 ## 5-4. argocd
 
 # 6. 모니터링
