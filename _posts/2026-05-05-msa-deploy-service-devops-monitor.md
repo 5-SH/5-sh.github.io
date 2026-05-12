@@ -554,8 +554,8 @@ F --> G[Deployment]
 ```text
 [ Windows PC ]
  ├─ Docker Desktop
- │   ├─ Harbor
- │   └─ Jenkins
+ │   ├─ Harbor(:8080)
+ │   └─ Jenkins(:8081)
  │
  └─ WSL2 Ubuntu
 
@@ -566,9 +566,9 @@ F --> G[Deployment]
  └─ w3-k8s
 ```
 
-### 5-3-1. jenkins 설치
+### 5-3-1. Jenkins 설치
 
-1. jenkins docker 실행
+1. Jenkins Docker 실행
 
 ```bash
 PS C:\WINDOWS\system32> docker run -d --name jenkins -p 8081:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v //var/run/docker.sock:/var/run/docker.sock jenkins/jenkins:lts
@@ -725,7 +725,9 @@ https://docs.docker.com/engine/reference/commandline/login/#credentials-store
 Login Succeeded
 ```
 
-5. Github SSH 연동
+### 5-3-2. Github 연동
+
+1. Github SSH 연동
 
 Jenkins에서 Git Clone을 하기 위해 Github SSH Key를 생성하고 Github Public key에 등록한다.    
 그리고 Jenkins 브라우저에서 Github SSH Key로 Credential 설정을 한다.   
@@ -738,7 +740,7 @@ ssh-keygen -t ed25519 -C "jenkins"
 # 주의 사항: CI/CD 자동화를 위해 Passphrase 없이 생성함
 ```
 
-6. Gihub Clone 테스트
+2. Gihub Clone 테스트
 
 Freestype Project 생성 후 Git Clone 테스트를 수행한다.   
 Repository는 ```https://github.com/5-SH/deploy-test-member.git```로 설정함.   
@@ -748,16 +750,401 @@ Repository는 ```https://github.com/5-SH/deploy-test-member.git```로 설정함.
   <p style="font-style: italic; color: gray;">Jenkins 접속</p>
 </figure>
 
-## 5-4. argocd
+### 5-3-3. Jenkins Pipeline 생성
 
-# 6. 모니터링
+Jenkins Pipeline을 사용해 Spring Boot 애플리케이션을 자동 빌드하고 Harbor Registry에 이미지를 Push한 뒤 Kubernetes에 자동 배포한다.   
+
+1. Jenkins Pipeline 구성
+```
+Git Clone
+   ↓
+Gradle Build
+   ↓
+Docker Image Build
+   ↓
+Harbor Login
+   ↓
+Harbor Registry Push
+   ↓
+Kubernetes Deployment
+```
+
+2. Jenkinsfile 구성
+
+Harbor(192.168.56.1:8080)에서 이미지를 Pull 하고 ```k8s/depl_svc.yml```을 사용해 k8s에 배포한다.   
+```rollout restart``` 명령으로 변경사항에 관계 없이 k8s에서 서비스를 재배포 한다.    
+
+```groovy
+pipeline {
+
+    agent any
+
+    environment {
+
+        IMAGE_NAME = "192.168.56.1:8080/deploy-test-member/member-service"
+        IMAGE_TAG = "latest"
+    }
+
+    stages {
+
+        stage('Git Clone') {
+
+            steps {
+
+                git branch: 'main',
+                    credentialsId: 'github-ssh',
+                    url: 'https://github.com/5-SH/deploy-test-member.git'
+            }
+        }
+
+        stage('Gradle Build') {
+
+            steps {
+
+                sh '''
+                chmod +x gradlew
+                ./gradlew clean build
+                '''
+            }
+        }
+
+        stage('Docker Build') {
+
+            steps {
+
+                sh '''
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                '''
+            }
+        }
+
+        stage('Harbor Login') {
+
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'harbor-account',
+                        usernameVariable: 'HARBOR_USER',
+                        passwordVariable: 'HARBOR_PASS'
+                    )
+                ]) {
+
+                    sh '''
+                    docker login 192.168.56.1:8080 \
+                    -u $HARBOR_USER \
+                    -p $HARBOR_PASS
+                    '''
+                }
+            }
+        }
+
+        stage('Harbor Push') {
+
+            steps {
+
+                sh '''
+                docker push $IMAGE_NAME:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Kubernetes Deploy') {
+
+            steps {
+
+                withCredentials([
+                    file(
+                        credentialsId: 'kubeconfig',
+                        variable: 'KUBECONFIG'
+                    )
+                ]) {
+
+                    sh '''
+                    kubectl apply -f k8s/depl_svc.yml
+                    kubectl rollout restart deployment/member-depl -n deploy-test
+                    '''
+                }
+            }
+        }
+    }
+}
+```
+
+3. Jenkins Docker 이미지 커스터마이징
+초기 Jenkins Container에 Docker CLI, kubectl, OpenJDK 17이 없어 빌드와 배포에 실패를 했다.   
+Jenkins Dockerfile을 아래와 같이 커스터마이징 해 도구들을 추가했다.   
+그리고 kubectl 설치, docker.sock 접근 권한, docker 명령 실행 실패로 root 유저를 사용했다.   
+
+```dockerfile
+# Dockerfile
+
+FROM jenkins/jenkins:lts-jdk17
+
+USER root
+
+RUN apt-get update && apt-get install -y docker.io curl
+
+RUN curl -LO "https://dl.k8s.io/release/v1.28.15/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && rm -f kubectl
+```
+
+Jenkins의 실행과 종료는 아래 명령어를 사용한다.
+
+```bash
+docker stop jenkins
+
+docker rm jenkins
+
+docker run -d --name jenkins -u root -p 8081:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock my-jenkins
+```
+
+## 5-4. 최종 CI/CD 흐름
+
+```
+Git Push
+   ↓
+Jenkins Trigger
+   ↓
+Gradle Build
+   ↓
+Docker Build
+   ↓
+Harbor Push
+   ↓
+kubectl Apply
+   ↓
+Kubernetes Rolling Update
+   ↓
+신규 Pod 생성
+   ↓
+서비스 반영
+```
+
+<figure>
+  <img src="https://i.imgur.com/lqxDRZv.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">member 서비스 CI/CD 성공</p>
+</figure>
+
+## 5-5. ordering, product 서비스 CI/CD
+
+1. ordering 서비스
+
+```groovy
+pipeline {
+
+    agent any
+
+    environment {
+
+        IMAGE_NAME = "192.168.56.1:8080/deploy-test-ordering/ordering-service"
+        IMAGE_TAG = "latest"
+    }
+
+    stages {
+
+        stage('Git Clone') {
+
+            steps {
+
+                git branch: 'main',
+                    credentialsId: 'github-ssh',
+                    url: 'https://github.com/5-SH/deploy-test-ordering.git'
+            }
+        }
+
+        stage('Gradle Build') {
+
+            steps {
+
+                sh '''
+                chmod +x gradlew
+                ./gradlew clean build
+                '''
+            }
+        }
+
+        stage('Docker Build') {
+
+            steps {
+
+                sh '''
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                '''
+            }
+        }
+
+        stage('Harbor Login') {
+
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'harbor-account',
+                        usernameVariable: 'HARBOR_USER',
+                        passwordVariable: 'HARBOR_PASS'
+                    )
+                ]) {
+
+                    sh '''
+                    docker login 192.168.56.1:8080 \
+                    -u $HARBOR_USER \
+                    -p $HARBOR_PASS
+                    '''
+                }
+            }
+        }
+
+        stage('Harbor Push') {
+
+            steps {
+
+                sh '''
+                docker push $IMAGE_NAME:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Kubernetes Deploy') {
+
+            steps {
+
+                withCredentials([
+                    file(
+                        credentialsId: 'kubeconfig',
+                        variable: 'KUBECONFIG'
+                    )
+                ]) {
+
+                    sh '''
+                    kubectl apply -f k8s/depl_svc.yml
+                    kubectl rollout restart deployment/ordering-depl -n deploy-test
+                    '''
+                }
+            }
+        }
+    }
+}
+```
+
+<figure>
+  <img src="https://i.imgur.com/CdBTHtP.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">ordering 서비스 CI/CD 성공</p>
+</figure>
+
+2. product 서비스
+
+```groovy
+pipeline {
+
+    agent any
+
+    environment {
+
+        IMAGE_NAME = "192.168.56.1:8080/deploy-test-product/product-service"
+        IMAGE_TAG = "latest"
+    }
+
+    stages {
+
+        stage('Git Clone') {
+
+            steps {
+
+                git branch: 'main',
+                    credentialsId: 'github-ssh',
+                    url: 'https://github.com/5-SH/deploy-test-product.git'
+            }
+        }
+
+        stage('Gradle Build') {
+
+            steps {
+
+                sh '''
+                chmod +x gradlew
+                ./gradlew clean build
+                '''
+            }
+        }
+
+        stage('Docker Build') {
+
+            steps {
+
+                sh '''
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                '''
+            }
+        }
+
+        stage('Harbor Login') {
+
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'harbor-account',
+                        usernameVariable: 'HARBOR_USER',
+                        passwordVariable: 'HARBOR_PASS'
+                    )
+                ]) {
+
+                    sh '''
+                    docker login 192.168.56.1:8080 \
+                    -u $HARBOR_USER \
+                    -p $HARBOR_PASS
+                    '''
+                }
+            }
+        }
+
+        stage('Harbor Push') {
+
+            steps {
+
+                sh '''
+                docker push $IMAGE_NAME:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Kubernetes Deploy') {
+
+            steps {
+
+                withCredentials([
+                    file(
+                        credentialsId: 'kubeconfig',
+                        variable: 'KUBECONFIG'
+                    )
+                ]) {
+
+                    sh '''
+                    kubectl apply -f k8s/depl_svc.yml
+                    kubectl rollout restart deployment/product-depl -n deploy-test
+                    '''
+                }
+            }
+        }
+    }
+}
+```
+
+<figure>
+  <img src="https://i.imgur.com/phEFiIy.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">product 서비스 CI/CD 성공</p>
+</figure>
+
+# 6. ArgoCD
+
+# 7. 모니터링
 1. grafana
 
 2. lgtm
 
 3. slack
 
-# 7. 그 외
+# 8. 그 외
 1. 시크릿 설정
 
 2. HTTPS 통신
