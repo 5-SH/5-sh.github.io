@@ -1,13 +1,13 @@
 ---
 layout: post
-title: MSA Deploy (3) - devOps & Monitoring
+title: MSA Deploy (3) - CI/CD & Harbor, Jenkins
 date: 2026-05-05 20:00:00 + 0900
 categories: [kubernetes]
 tags: [kubernetes, msa]
 mermaid: true
 ---
 
-# 5. devOps 환경
+# 5. CI/CD 환경
 virtualbox에 vagrant로 프로비저닝한 환경에 harbor와 jenkins를 구성하기엔 리소스가 모자랄 것으로 예상해 로컬 PC 기반 CI/CD + k8s 배포 파이프라인 구축   
 
 ```

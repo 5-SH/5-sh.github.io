@@ -132,14 +132,18 @@ ArgoCD admin 계정의 초기 비밀번호는 아래 명령어로 확인할 수 
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
 ```
 
-# 7. 모니터링
-## 7-1. Prometheus
+# 7. Helm 도입
 
-## 7-2. Grafana
 
-# 8. LGTM 로그 수집
 
-# 9. 그 외
+# 8. 모니터링
+## 8-1. Prometheus
+
+## 8-2. Grafana
+
+# 9. LGTM 로그 수집
+
+# 10. 그 외
 1. Kubernetes 버전 업
 
 2. 시크릿 설정 
