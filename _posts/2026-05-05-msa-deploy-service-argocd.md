@@ -390,7 +390,7 @@ spec:
 
 <figure>
   <img src="https://i.imgur.com/3KySyp5.png" width="100%" alt=""/>
-  <p style="font-style: italic; color: gray;">member 서비스 CI/CD 성공</p>
+  <p style="font-style: italic; color: gray;">ArgoCD 적용</p>
 </figure>
 
 # 7. Helm 도입
