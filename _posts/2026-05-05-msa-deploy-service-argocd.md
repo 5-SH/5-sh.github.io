@@ -132,9 +132,268 @@ ArgoCD admin 계정의 초기 비밀번호는 아래 명령어로 확인할 수 
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
 ```
 
+## 6-3. ArgoCD 적용
+
+1. Github Repository 생성
+
+ArgoCD Application 에서 서비스 배포 및 관리를 위해 참조할 레포지토리를 생성한다.   
+아래와 같은 구조로 서비스 별 deployment.yaml, service.yaml을 작성해 저장한다.   
+
+```
+deploy-test-manifest(https://github.com/5-SH/deploy-test-manifest.git)
+ ├── member
+ │    └── deployment.yaml
+ │    └── service.yaml
+ │
+ ├── ordering
+ │    └── deployment.yaml
+ │    └── service.yaml
+ │
+ └── product
+      └── deployment.yaml
+      └── service.yaml
+```
+
+2. Jenkins 역할 변경
+
+기존에는 Jenkins에서 Image push 다음 서비스 별 레포지토리에 있는 depl_svc.yaml 파일을 사용해 ```kubectl apply``` 까지 수행했다.    
+ArgoCD 이후에는 Jenkins는 Image push 다음 Manifest repository에서 서비스 별 deployment.yaml 또는 service.yaml을 수정한다.    
+그리고 서비스의 배포는 ArgoCD에서 Manifest repository를 참조해 직접 수행한다.   
+
+서비스 별 Jenkins pipeline에서 아래와 같이 Kubernetes Deploy stage를 삭제하고 Manifest repository를 수정하는 stage를 추가한다.      
+
+```groovy
+pipeline {
+
+    agent any
+
+    environment {
+
+        IMAGE_NAME = "192.168.56.1:8080/deploy-test-member/member-service"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Git Clone') {
+
+            steps {
+
+                git branch: 'main',
+                    credentialsId: 'github-ssh',
+                    url: 'https://github.com/5-SH/deploy-test-member.git'
+            }
+        }
+
+        stage('Gradle Build') {
+
+            steps {
+
+                sh '''
+                chmod +x gradlew
+                ./gradlew clean build
+                '''
+            }
+        }
+
+        stage('Docker Build') {
+
+            steps {
+
+                sh '''
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                '''
+            }
+        }
+
+        stage('Harbor Login') {
+
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'harbor-account',
+                        usernameVariable: 'HARBOR_USER',
+                        passwordVariable: 'HARBOR_PASS'
+                    )
+                ]) {
+
+                    sh '''
+                    docker login 192.168.56.1:8080 \
+                    -u $HARBOR_USER \
+                    -p $HARBOR_PASS
+                    '''
+                }
+            }
+        }
+
+        stage('Harbor Push') {
+
+            steps {
+
+                sh '''
+                docker push $IMAGE_NAME:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Update Manifest Repo') {
+
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'github-token',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    )
+                ]) {
+
+                    sh '''
+                    rm -rf deploy-test-manifest
+
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/5-SH/deploy-test-manifest.git
+
+                    cd deploy-test-manifest/member
+
+                    sed -i "s|image:.*|image: 192.168.56.1:8080/deploy-test-member/member-service:${BUILD_NUMBER}|g" deployment.yaml
+
+                    git config user.email "jenkins@deploy-test.com"
+                    git config user.name "jenkins"
+
+                    git add .
+                    git commit -m "update member image ${BUILD_NUMBER}"
+
+                    git push
+                    '''
+                }
+            }
+        }
+    }
+}
+```
+
+Harbor Push stage에서 Jenkins에서 서비스를 빌드할 때 마다 자동으로 증가하는 ```BUILD_NUMBER``` 값을 이미지의 버전으로 사용해 Harbor에 Push 한다.   
+그리고 Update Manifest Repo Stage에서는 deployment.yaml에 Harbor에 push 한 ```BUILD_NUMBER``` 버전으로 이미지 pull 하도록 수정한다.   
+
+3. ArgoCD Application 생성
+
+Application은 k8s에 어떤 서비스를 어떤 방식으로 배포할지 정의하는 객체이다.   
+ArgoCD는 Git(deploy-test-manifest)을 계속 감시하다가 변경을 감지하면 k8s 클러스터의 상태와 비교해 차이가 있으면 자동/수동으로 배포한다.   
+아래 서비스 별 application yaml을 ```kubectl apply -f {service}-app.yaml``` 명령어로 적용한다.   
+
+```bash
+# member-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: member-app
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/5-SH/deploy-test-manifest.git
+    targetRevision: main
+    path: member
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: deploy-test
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true
+
+# ordering-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: ordering-app
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/5-SH/deploy-test-manifest.git
+    targetRevision: main
+    path: ordering
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: deploy-test
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true
+
+# product-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: product-app
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/5-SH/deploy-test-manifest.git
+    targetRevision: main
+    path: product
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: deploy-test
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true
+```
+
+4. ArgoCD 배포
+
+아래 흐름으로 ArgoCD에서 서비스를 배포한다.   
+
+```
+개발자 Git Push
+        ↓
+     Jenkins Build
+        ↓
+   Docker Image 생성
+        ↓
+      Harbor Push
+        ↓
+ GitOps Repo Manifest 수정
+        ↓
+       ArgoCD Sync
+        ↓
+   Kubernetes 자동 반영
+```
+
+<figure>
+  <img src="https://i.imgur.com/3KySyp5.png" width="100%" alt=""/>
+  <p style="font-style: italic; color: gray;">member 서비스 CI/CD 성공</p>
+</figure>
+
 # 7. Helm 도입
-
-
 
 # 8. 모니터링
 ## 8-1. Prometheus
