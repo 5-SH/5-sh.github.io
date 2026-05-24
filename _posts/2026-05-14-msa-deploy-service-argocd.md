@@ -380,27 +380,3 @@ MetalLB, ingress-controller에서 HTTPS 인증서를 설정하지 않아 HTTP로
 >   <img src="https://i.imgur.com/3KySyp5.png" width="100%" alt=""/>
 >   <p style="font-style: italic; color: gray;">ArgoCD 적용</p>
 > </figure>
-
-# 7. Helm 도입
-
-# 8. 모니터링
-## 8-1. Prometheus
-
-## 8-2. Grafana
-
-# 9. LGTM 로그 수집
-
-# 10. 그 외
-1. Kubernetes 버전 업
-
-2. 시크릿 설정 
-
-3. HTTPS 통신 
-
-4. DB 이중화 연결 
-
-5. 서비스용 DB 계정 생성 
-
-6. 젠킨스, harbor 구성 
-
-7. HPA
